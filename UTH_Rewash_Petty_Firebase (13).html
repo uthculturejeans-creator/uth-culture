@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>UTH — Rewash &amp; Petty Register</title>
+<style>
+  :root{
+    --bg:#EEF1F5;--surface:#FFFFFF;--ink:#16202C;--muted:#6A7686;
+    --line:#E1E6ED;--line-soft:#EDF0F4;
+    --denim:#24487A;--denim-dark:#1A3560;--denim-tint:#E9EFF7;
+    --amber:#B26A16;--amber-tint:#FBF0DE;
+    --red:#B23A2B;--red-tint:#FBE7E3;
+    --teal:#137567;--teal-tint:#DEF1ED;
+    --ok:#2C8449;--ok-tint:#E2F1E7;
+    --shadow:0 1px 2px rgba(22,32,44,.06),0 4px 16px rgba(22,32,44,.05);
+    --r:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;padding-bottom:40px;-webkit-font-smoothing:antialiased}
+  .num{font-variant-numeric:tabular-nums}
+  h1,h2,h3{margin:0}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:15px}
+  input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+  .bar{position:sticky;top:0;z-index:30;background:var(--denim);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 10px rgba(26,53,96,.25)}
+  .bar h1{font-size:17px;font-weight:700;letter-spacing:.2px;line-height:1.15}
+  .bar .sub{font-size:11.5px;opacity:.85;font-weight:500;margin-top:1px;display:flex;align-items:center;gap:6px}
+  .bar-btn{background:rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:9px 13px;font-size:15px;font-weight:600}
+  .bar-btn:active{background:rgba(255,255,255,.28)}
+  .live{width:7px;height:7px;border-radius:50%;background:#7CD69A;display:inline-block}
+  .live.off{background:#E0A96D}
+  .wrap{max-width:820px;margin:0 auto;padding:0 14px}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  .stat{background:var(--surface);border-radius:12px;padding:11px 12px;box-shadow:var(--shadow);border:1px solid var(--line-soft)}
+  .stat .v{font-size:20px;font-weight:750;letter-spacing:-.5px}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.2}
+  .stat.warn .v{color:var(--amber)}
+  @media(max-width:560px){.summary{grid-template-columns:repeat(2,1fr)}.stat .v{font-size:19px}}
+  .tabs{display:flex;gap:5px;background:var(--surface);padding:5px;border-radius:13px;box-shadow:var(--shadow);border:1px solid var(--line-soft);overflow-x:auto}
+  .tab{flex:0 0 auto;padding:10px 12px;border-radius:9px;font-weight:650;font-size:12.5px;color:var(--muted);text-align:center;white-space:nowrap;transition:background .12s,color .12s}
+  .tab[data-active="1"]{color:#fff}
+  .tab.rewash[data-active="1"]{background:var(--amber)}
+  .tab.defect[data-active="1"]{background:var(--red)}
+  .tab.sample[data-active="1"]{background:var(--teal)}
+  .tab.receive[data-active="1"],.tab.months[data-active="1"],.tab.find[data-active="1"],.tab.collect[data-active="1"]{background:var(--denim)}
+  .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line-soft);margin:14px 0;overflow:visible}
+  .card-head{padding:13px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line-soft)}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .dot.rewash{background:var(--amber)}.dot.defect{background:var(--red)}.dot.sample{background:var(--teal)}.dot.denim{background:var(--denim)}
+  .form{padding:14px 16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .fld{flex:1;min-width:120px;margin-bottom:11px}
+  .fld.full{flex-basis:100%}
+  .fld label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin-bottom:5px}
+  .fld input,.fld select,.fld textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;outline:none;transition:border-color .12s}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--denim)}
+  .fld textarea{resize:vertical;min-height:52px;line-height:1.4}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .total-pill{background:var(--denim-tint);color:var(--denim-dark);border-radius:10px;padding:11px 12px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+  .btn-primary{width:100%;padding:13px;border-radius:11px;color:#fff;font-weight:700;font-size:15px;margin-top:3px}
+  .btn-primary.rewash{background:var(--amber)}.btn-primary.defect{background:var(--red)}.btn-primary.sample{background:var(--teal)}.btn-primary.denim{background:var(--denim)}
+  .btn-primary:active{filter:brightness(.93)}
+  .btn-primary:disabled{opacity:.5}
+  .drop{border:1.5px solid var(--line);border-radius:10px;margin-top:-6px;margin-bottom:11px;overflow:hidden;display:none;box-shadow:var(--shadow);background:#fff}
+  .drop .opt{padding:11px 12px;display:flex;gap:8px;align-items:center;border-top:1px solid var(--line-soft);font-size:14px}
+  .drop .opt:first-child{border-top:none}
+  .drop .opt:active{background:var(--denim-tint)}
+  .drop .opt b{color:var(--denim-dark)}
+  .drop .opt .ty{color:var(--muted);font-size:12.5px;text-transform:capitalize}
+  .drop .opt .bal{margin-left:auto;color:var(--amber);font-weight:700;font-size:12.5px}
+  .drop .opt.none{color:var(--muted);justify-content:center}
+  .list-head{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 8px}
+  .list-head h3{font-size:14px;font-weight:700}
+  .slip{background:var(--surface);border-radius:13px;box-shadow:var(--shadow);border:1px solid var(--line-soft);padding:13px 15px;margin-bottom:10px}
+  .slip-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .slip-no{font-size:12px;font-weight:800;color:var(--denim-dark);background:var(--denim-tint);padding:3px 8px;border-radius:7px;letter-spacing:.4px}
+  .slip-qty{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1;margin-top:7px}
+  .slip-qty small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .slip-date{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}
+  .badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px}
+  .badge.open{background:var(--amber-tint);color:var(--amber)}
+  .badge.done{background:var(--ok-tint);color:var(--ok)}
+  .splits{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .chip{font-size:12px;font-weight:600;padding:5px 10px;border-radius:9px;background:var(--line-soft);color:var(--ink)}
+  .chip b{font-weight:800}
+  .chip.bahar{background:var(--amber-tint);color:var(--amber)}
+  .chip.andar{background:var(--denim-tint);color:var(--denim-dark)}
+  .chip.ret{background:var(--ok-tint);color:var(--ok)}
+  .chip.pend{background:var(--amber-tint);color:var(--amber)}
+  .narr{margin-top:9px;font-size:13px;color:#3a4655;background:var(--line-soft);border-radius:9px;padding:8px 10px;white-space:pre-wrap;word-break:break-word}
+  .slip-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;border-top:1px solid var(--line-soft);padding-top:10px}
+  .act{font-size:12.5px;font-weight:650;padding:7px 11px;border-radius:9px;background:var(--line-soft);color:var(--ink)}
+  .act:active{filter:brightness(.95)}
+  .act.go{background:var(--denim-tint);color:var(--denim-dark)}
+  .act.ok{background:var(--ok-tint);color:var(--ok)}
+  .act.del{color:var(--red);margin-left:auto}
+  .recv-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;font-size:14px;font-weight:600;background:var(--line-soft);border-radius:10px;padding:10px 13px}
+  .recv-row b{font-weight:800}
+  .rcv{margin-top:10px;border-top:1px solid var(--line-soft);padding-top:9px}
+  .rcv-h{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .rcv-i{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+  .rcv-i b{color:var(--ok)}
+  .hintchip{margin-top:9px;font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-tint);padding:6px 10px;border-radius:8px;display:inline-block}
+  .abrow{margin:4px 0 12px}
+  .abbar{background:var(--line-soft);border-radius:7px;height:24px;position:relative;overflow:hidden;margin-top:4px}
+  .abbar > i{display:block;height:100%}
+  .abbar > span{position:absolute;top:0;left:9px;line-height:24px;font-size:12px;font-weight:800}
+  .log{margin-top:10px;font-size:12px;color:var(--muted)}
+  .log-item{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px dashed var(--line)}
+  .log-item span:first-child{color:var(--ink)}
+  .empty{text-align:center;color:var(--muted);padding:34px 20px;font-size:14px}
+  .empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+  /* collect */
+  .big{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line-soft);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+  .big .bv{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1;min-width:64px}
+  .big .bl{font-weight:700;font-size:15px}
+  .big .bs{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .big.wash{border-left:5px solid var(--teal)} .big.wash .bv{color:var(--teal)}
+  .big.stitch{border-left:5px solid var(--red)} .big.stitch .bv{color:var(--red)}
+  .big.dep{border-left:5px solid var(--amber)} .big.dep .bv{color:var(--amber)}
+  .brk{font-size:12.5px;color:var(--muted);margin:2px 2px 14px}
+  .brk .b1{display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px dashed var(--line)}
+  .brk .b1 b{color:var(--ink)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;font-weight:600;font-size:14px}
+  .sw{width:46px;height:27px;border-radius:20px;background:var(--line);position:relative;transition:.15s;flex:0 0 auto}
+  .sw.on{background:var(--ok)}
+  .sw:after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .sw.on:after{left:22px}
+  .overlay{position:fixed;inset:0;background:rgba(16,24,34,.5);z-index:50;display:none;align-items:flex-end;justify-content:center}
+  .overlay[data-open="1"]{display:flex}
+  .modal{background:var(--surface);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0));max-height:90vh;overflow:auto}
+  @media(min-width:560px){.overlay{align-items:center}.modal{border-radius:18px}}
+  .modal h2{font-size:17px;font-weight:750;margin-bottom:3px}
+  .modal .msub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .modal-acts{display:flex;gap:10px;margin-top:6px}
+  .modal-acts button{flex:1;padding:13px;border-radius:11px;font-weight:700}
+  .btn-ghost{background:var(--line-soft);color:var(--ink)}
+  .btn-fill{background:var(--denim);color:#fff}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;z-index:80;opacity:0;transition:.25s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .toast[data-show="1"]{opacity:1;transform:translateX(-50%) translateY(0)}
+  .lock{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#24487A,#16294a);display:flex;align-items:center;justify-content:center;padding:22px}
+  .lock-box{background:#fff;border-radius:18px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .lock-box h2{font-size:20px;font-weight:750;margin-bottom:4px}
+  .lock-box p{font-size:13px;color:var(--muted);margin:0 0 18px}
+  .found{background:var(--denim-tint);border-radius:11px;padding:12px 13px;margin:4px 0 12px;font-size:13px}
+  .found .r{display:flex;justify-content:space-between;padding:2px 0}
+  #printArea{display:none}
+  .copy{color:#000}
+  .pr-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:6px}
+  .pr-co{font-size:18pt;font-weight:800;letter-spacing:.5px}
+  .pr-sub{font-size:9pt;color:#333}
+  .pr-label{font-size:9pt;font-weight:700;border:1.5px solid #000;padding:3px 9px;border-radius:4px;white-space:nowrap}
+  .pr-type{font-weight:700;margin-top:8px;font-size:11pt}
+  .pr-no{display:flex;gap:6px;align-items:baseline;margin-top:6px;font-size:11pt}
+  .pr-no b{font-size:13pt}
+  .pr-t{width:100%;border-collapse:collapse;margin-top:8px;font-size:11pt}
+  .pr-t td{border:1px solid #999;padding:5px 8px}
+  .pr-t td:nth-child(odd){color:#333;width:26%}
+  .pr-t td:nth-child(even){font-weight:700}
+  .pr-narr{margin-top:8px;font-size:10.5pt}
+  .pr-rec{margin-top:6px;font-size:9.5pt;color:#333}
+  .pr-sign{display:flex;justify-content:space-between;margin-top:16px;font-size:10pt}
+  @media print{
+    html,body{margin:0!important;padding:0!important;background:#fff}
+    .bar,.wrap,.overlay,.toast,.lock{display:none!important}
+    #printArea{display:block}
+    @page{size:A4 portrait;margin:0}
+    .copy{height:128mm;padding:8mm 11mm 5mm;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid;overflow:hidden;font-size:9.5pt}
+    .pr-co{font-size:15pt}.pr-head{padding-bottom:4px}.pr-t td{padding:3px 7px}
+    .tear{height:9mm;border-top:1.5px dashed #666;position:relative}
+    .tear:after{content:"tear here";position:absolute;top:-6pt;left:50%;transform:translateX(-50%);background:#fff;padding:0 8px;font-size:8pt;color:#999}
+  }
+</style>
+</head>
+<body>
+
+<div class="lock" id="lock"><div class="lock-box" id="lock-box"><h2>Loading…</h2><p>Connecting to your register.</p></div></div>
+
+<div class="bar">
+  <div>
+    <h1>Rewash &amp; Petty Register</h1>
+    <div class="sub"><span class="live off" id="live"></span><span id="who">UTH Culture</span><span id="pendtag" style="color:#FFD9A0;font-weight:700"></span></div>
+  </div>
+  <div><button class="bar-btn" id="setBtn" onclick="openSettings()">&#9881;</button></div>
+</div>
+
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+
+  <div class="tabs">
+    <button class="tab collect" data-tab="collect" onclick="switchTab('collect')">Collect</button>
+    <button class="tab collect" id="tab-approve" data-tab="approve" onclick="switchTab('approve')">Approve</button>
+    <button class="tab rewash"  data-tab="rewash"  onclick="switchTab('rewash')">Rewash</button>
+    <button class="tab defect"  data-tab="defect"  onclick="switchTab('defect')">Defect</button>
+    <button class="tab sample"  data-tab="sample"  onclick="switchTab('sample')">Sample</button>
+    <button class="tab receive" data-tab="receive" onclick="switchTab('receive')">Receive</button>
+    <button class="tab find"    data-tab="find"    onclick="switchTab('find')">Find</button>
+    <button class="tab months"  data-tab="months"  onclick="switchTab('months')">Months</button>
+  </div>
+
+  <section data-panel="collect">
+    <div id="col-body"></div>
+  </section>
+
+  <section data-panel="approve" style="display:none">
+    <div id="ap-body"></div>
+  </section>
+
+  <section data-panel="rewash" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot rewash"></span>New rewash slip</div>
+      <div class="form">
+        <div class="row"><div class="fld"><label>Date</label><input type="date" id="rw-date"></div></div>
+        <div class="row">
+          <div class="fld"><label>Bahar pieces <span style="color:var(--amber)">(not deposited)</span></label><input type="number" inputmode="numeric" id="rw-bahar" placeholder="0" oninput="rwTotal()"></div>
+          <div class="fld"><label>Andar pieces <span style="color:var(--denim)">(deposited)</span></label><input type="number" inputmode="numeric" id="rw-andar" placeholder="0" oninput="rwTotal()"></div>
+        </div>
+        <div class="fld full"><div class="total-pill"><span>Total to rewash</span><span class="num" id="rw-total">0</span></div></div>
+        <div class="fld full"><label>Narration / comment</label><textarea id="rw-narr" placeholder="e.g. shade not proper, sent to XYZ washing…"></textarea></div>
+        <button class="btn-primary rewash" onclick="addRewash()">Add rewash slip</button>
+      </div>
+    </div>
+    <div class="list-head"><h3>Rewash slips</h3></div>
+    <div id="rw-list"></div>
+  </section>
+
+  <section data-panel="defect" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot defect"></span>New defect slip · Wash → Stitch</div>
+      <div class="form">
+        <div class="row">
+          <div class="fld"><label>Date</label><input type="date" id="df-date"></div>
+          <div class="fld"><label>Pieces sent</label><input type="number" inputmode="numeric" id="df-qty" placeholder="0"></div>
+        </div>
+        <div class="fld full"><label>Narration / comment</label><textarea id="df-narr" placeholder="e.g. torn / stain, sent back to stitching…"></textarea></div>
+        <button class="btn-primary defect" onclick="addDefect()">Add defect slip</button>
+      </div>
+    </div>
+    <div class="list-head"><h3>Defect slips</h3></div>
+    <div id="df-list"></div>
+  </section>
+
+  <section data-panel="sample" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot sample"></span>New sample slip · Stitch → Wash → You</div>
+      <div class="form">
+        <div class="row">
+          <div class="fld"><label>Date</label><input type="date" id="sm-date"></div>
+          <div class="fld"><label>Pieces sent</label><input type="number" inputmode="numeric" id="sm-qty" placeholder="0"></div>
+        </div>
+        <div class="fld full"><label>Lot / ref <span style="color:var(--muted)">(optional)</span></label><input type="text" id="sm-lot" placeholder="e.g. lot no. or sort"></div>
+        <div class="fld full"><label>Narration / comment</label><textarea id="sm-narr" placeholder="e.g. 2 pcs sample of new wash for approval…"></textarea></div>
+        <button class="btn-primary sample" onclick="addSample()">Add sample slip</button>
+      </div>
+    </div>
+    <div class="list-head"><h3>Sample slips</h3></div>
+    <div id="sm-list"></div>
+  </section>
+
+  <section data-panel="receive" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot denim"></span>Receive against a slip</div>
+      <div class="form">
+        <div class="fld full"><label>Search slip no. / type / note</label><input type="text" id="rc-no" placeholder="type e.g. df  or  DF-004" oninput="rcInput()" autocomplete="off"></div>
+        <div class="drop" id="rc-drop"></div>
+        <div id="rc-found"></div>
+        <div id="rc-entry"></div>
+      </div>
+    </div>
+    <div class="list-head"><h3>Recent receipts</h3></div>
+    <div id="rc-list"></div>
+  </section>
+
+  <section data-panel="find" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot denim"></span>Find &amp; reprint a slip</div>
+      <div class="form">
+        <div class="fld full"><label>Search by slip no. / type / lot / note</label><input type="text" id="fn-q" placeholder="type e.g. rw  or  DF-004  or  a word from the note" oninput="renderFinder()" autocomplete="off"></div>
+        <div class="hint">Tap Print on any slip for an A4 sheet with two copies — tear in half, keep one, give one.</div>
+      </div>
+    </div>
+    <div id="fn-list"></div>
+  </section>
+
+  <section data-panel="months" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="dot denim"></span>Month tracker</div>
+      <div class="form">
+        <div class="row">
+          <div class="fld"><label>Month</label><input type="month" id="mo-pick" onchange="renderMonths()"></div>
+          <div class="fld"><label>Type</label><select id="mo-type" onchange="renderMonths()"><option value="all">All</option><option value="rewash">Rewash</option><option value="defect">Defect</option><option value="sample">Sample</option></select></div>
+        </div>
+        <button class="btn-primary denim" onclick="exportMonthCSV()">Export this month (.csv)</button>
+      </div>
+    </div>
+    <div id="mo-body"></div>
+  </section>
+</div>
+
+<div id="printArea"></div>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+"use strict";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDchx8YFElnIg8p8wRJE-FlnGGFj1FHaw8",
+  authDomain: "uth-culture.firebaseapp.com",
+  projectId: "uth-culture",
+  storageBucket: "uth-culture.firebasestorage.app",
+  messagingSenderId: "796087612776",
+  appId: "1:796087612776:web:a5313e453c66dafca012dd",
+  measurementId: "G-EDZMGKEDLX"
+};
+
+const C_SLIPS="rewash_slips", C_CTR="rewash_counters", C_CFG="rewash_config";
+const PREFIX={rewash:"RW",defect:"DF",sample:"SM"};
+const TYPENAME={rewash:"REWASH",defect:"DEFECT (Wash → Stitch)",sample:"SAMPLE (Stitch → Wash)"};
+let fdb=null, slips=[], tab="collect", rcSlip=null;
+let me=sessionStorage.getItem("uth_rw_user")||"";
+let cfgCache=null;
+let rememberPw=sessionStorage.getItem("uth_rw_remember")==="1";
+let approveUnlocked=false;
+
+function cfgOk(){return firebaseConfig.projectId && firebaseConfig.projectId!=="PASTE_PROJECT_ID";}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function fmtDate(s){if(!s)return"";const[y,m,d]=s.split("-");return d+"/"+m+"/"+y.slice(2);}
+function monthOf(s){return(s||"").slice(0,7);}
+function n(v){v=parseInt(v,10);return isNaN(v)||v<0?0:v;}
+function pad(x){return String(x).padStart(3,"0");}
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function totalOf(s){return s.type==="rewash"?((s.bahar||0)+(s.andar||0)):(s.given||0);}
+function recvOf(s){return s.type==="rewash"?((s.recvAndar||0)+(s.recvBahar||0)):(s.received||0);}
+function isDep(r){return !!r&&(r.kind==="deposit"||r.kind==="bahar");}
+function washPendOf(s){if(s.type==="rewash")return Math.max(0,(s.andar||0)-(s.recvAndar||0))+Math.max(0,(s.bahar||0)-(s.recvBahar||0));if(s.type==="sample")return Math.max(0,(s.given||0)-(s.received||0));return 0;}
+function isDone(s){if(s.type==="rewash")return (s.recvAndar||0)>=(s.andar||0)&&(s.recvBahar||0)>=(s.bahar||0)&&(s.andarDep||0)>=(s.andar||0);return (s.received||0)>=(s.given||0);}
+function slipById(id){return slips.find(s=>s._id===id);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function pendSum(s){let a=0,b=0,q=0;(s.pendingReceipts||[]).forEach(r=>{a+=r.andar||0;b+=r.bahar||0;q+=r.qty||0;});return{a,b,q};}
+function remain(s){const p=pendSum(s);if(s.type==="rewash")return{andar:Math.max(0,(s.andar||0)-(s.recvAndar||0)-p.a),bahar:Math.max(0,(s.bahar||0)-(s.recvBahar||0)-p.b)};return{qty:Math.max(0,(s.given||0)-(s.received||0)-p.q)};}
+let tt;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.dataset.show="1";clearTimeout(tt);tt=setTimeout(()=>el.dataset.show="0",2400);}
+
+/* approval */
+function verifyApprove(pw){const c=cfgCache||{};const ap=(c.approvePw||c.adminPin||"");return ap!==""&&(pw||"").trim().toLowerCase()===ap.toLowerCase();}
+function markUnlocked(){if(rememberPw)approveUnlocked=true;}
+function askApproval(msg,cb){
+  if(approveUnlocked){cb();return;}
+  showModal(`<h2>Approval</h2><div class="msub">${esc(msg)}</div>
+    <div class="fld"><label>Approval password</label><input type="password" id="apw" autocomplete="off"></div>
+    <div id="aperr" style="color:var(--red);font-size:12.5px;margin:-4px 0 10px;display:none">Wrong password</div>
+    <div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-fill" id="apok">Confirm</button></div>`);
+  const inp=document.getElementById("apw");inp.focus();
+  const run=()=>{if(verifyApprove(inp.value)){markUnlocked();closeModal();cb();}else{document.getElementById("aperr").style.display="block";}};
+  document.getElementById("apok").onclick=run;inp.addEventListener("keydown",e=>{if(e.key==="Enter")run();});}
+
+/* modals */
+function showModal(h){document.getElementById("modal").innerHTML=h;document.getElementById("overlay").dataset.open="1";}
+function closeModal(){document.getElementById("overlay").dataset.open="0";}
+document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeModal();});
+function modalText(t,val,cb){showModal(`<h2>${esc(t)}</h2><div style="height:10px"></div><div class="fld"><textarea id="mt" style="min-height:90px;width:100%;padding:11px;border:1.5px solid var(--line);border-radius:10px">${esc(val)}</textarea></div><div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-fill" id="mok">Save</button></div>`);document.getElementById("mok").onclick=()=>{cb(document.getElementById("mt").value);closeModal();};}
+function pwFieldHTML(){return approveUnlocked?"":`<div class="fld"><label>Approval password</label><input type="password" id="mpw" autocomplete="off"></div><div id="mperr" style="color:var(--red);font-size:12.5px;margin:-4px 0 10px;display:none">Wrong password</div>`;}
+function pwOk(){if(approveUnlocked)return true;const el=document.getElementById("mpw");if(el&&verifyApprove(el.value)){markUnlocked();return true;}const er=document.getElementById("mperr");if(er)er.style.display="block";return false;}
+function modalReceive(s){const total=totalOf(s),rem=remain(s);
+  let body;
+  if(s.type==="rewash"){body=`<div class="row">
+      <div class="fld"><label>Andar received <span style="color:var(--muted)">(${rem.andar} left)</span></label><input type="number" inputmode="numeric" id="mA" placeholder="0"></div>
+      <div class="fld"><label>Bahar received <span style="color:var(--muted)">(${rem.bahar} left)</span></label><input type="number" inputmode="numeric" id="mB" placeholder="0"></div></div>`;
+  }else{body=`<div class="fld"><label>Received qty <span style="color:var(--muted)">(${rem.qty} left)</span></label><input type="number" inputmode="numeric" id="mq" placeholder="0"></div>`;}
+  showModal(`<h2>Receive · ${esc(s.no)}</h2><div class="msub">${s.type} · received ${recvOf(s)} / ${total} — will go for approval</div>
+    ${body}
+    <div class="fld"><label>Date</label><input type="date" id="md"></div>
+    <div class="fld"><label>Note (optional)</label><input type="text" id="mn"></div>
+    <div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-fill" id="mok">Send for approval</button></div>`);
+  document.getElementById("md").value=today();
+  document.getElementById("mok").onclick=()=>{
+    let parts;
+    if(s.type==="rewash"){const a=n(document.getElementById("mA").value),b=n(document.getElementById("mB").value);if(a+b<=0){toast("Enter andar or bahar received");return;}
+      if(a>rem.andar){toast(`Only ${rem.andar} andar pending`);return;}if(b>rem.bahar){toast(`Only ${rem.bahar} bahar pending`);return;}parts={andar:a,bahar:b};}
+    else{const q=n(document.getElementById("mq").value);if(q<=0){toast("Enter qty");return;}if(q>rem.qty){toast(`Only ${rem.qty} pending`);return;}parts={qty:q};}
+    queueReceipt(s._id,parts,document.getElementById("md").value||today(),document.getElementById("mn").value.trim());closeModal();};}
+
+/* firestore writes */
+async function nextNo(type){const ref=fdb.collection(C_CTR).doc(type);
+  const seq=await fdb.runTransaction(async t=>{const d=await t.get(ref);const cur=d.exists?(d.data().seq||0):0;const nx=cur+1;t.set(ref,{seq:nx},{merge:true});return nx;});
+  return PREFIX[type]+"-"+pad(seq);}
+async function addSlip(type,data){
+  try{const doc=Object.assign({type,no:null,received:0,recvAndar:0,recvBahar:0,andarDep:0,receipts:[],pendingReceipts:[],approved:false,createdAt:Date.now(),createdBy:me},data);
+    await fdb.collection(C_SLIPS).add(doc);toast("Sent for approval");}catch(e){toast("Save failed — check connection");}}
+function approveSlip(id){askApproval("Approve & record this slip?",async()=>{const ref=fdb.collection(C_SLIPS).doc(id);
+  try{await fdb.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)return;const s=d.data();if(s.approved)return;
+    const cref=fdb.collection(C_CTR).doc(s.type);const cd=await t.get(cref);const cur=cd.exists?(cd.data().seq||0):0;const nx=cur+1;
+    t.set(cref,{seq:nx},{merge:true});t.update(ref,{approved:true,no:PREFIX[s.type]+"-"+pad(nx),approvedAt:Date.now(),approvedBy:me});
+  });toast("Approved & recorded");}catch(e){toast("Failed — check connection");}});}
+function rejectSlip(id){askApproval("Reject & discard this slip?",async()=>{try{await fdb.collection(C_SLIPS).doc(id).delete();toast("Rejected");}catch(e){toast("Failed");}});}
+async function queueReceipt(id,parts,date,note){const ref=fdb.collection(C_SLIPS).doc(id);
+  try{await fdb.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)return;const s=d.data();
+    const p={a:0,b:0,q:0};(s.pendingReceipts||[]).forEach(r=>{p.a+=r.andar||0;p.b+=r.bahar||0;p.q+=r.qty||0;});
+    const entry={id:uid(),date,note,by:me,at:Date.now()};
+    if(s.type==="rewash"){entry.andar=parts.andar||0;entry.bahar=parts.bahar||0;entry.qty=entry.andar+entry.bahar;
+      if(entry.andar>((s.andar||0)-(s.recvAndar||0)-p.a)||entry.bahar>((s.bahar||0)-(s.recvBahar||0)-p.b))throw new Error("over");}
+    else{entry.qty=parts.qty||0;if(entry.qty>((s.given||0)-(s.received||0)-p.q))throw new Error("over");}
+    t.update(ref,{pendingReceipts:(s.pendingReceipts||[]).concat([entry])});
+  });toast("Receipt sent for approval");}catch(e){toast(e.message==="over"?"More than pending — not allowed":"Failed — check connection");}}
+function approveReceipt(slipId,rid){askApproval("Approve this receipt?",async()=>{const ref=fdb.collection(C_SLIPS).doc(slipId);
+  try{await fdb.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)return;const s=d.data();
+    const pr=(s.pendingReceipts||[]);const r=pr.find(x=>x.id===rid);if(!r)return;
+    const upd={pendingReceipts:pr.filter(x=>x.id!==rid)};
+    if(s.type==="rewash"){const a=Math.min(s.andar||0,(s.recvAndar||0)+(r.andar||0)),b=Math.min(s.bahar||0,(s.recvBahar||0)+(r.bahar||0));upd.recvAndar=a;upd.recvBahar=b;upd.received=a+b;}
+    else{upd.received=Math.min(s.given||0,(s.received||0)+(r.qty||0));}
+    upd.receipts=(s.receipts||[]).concat([Object.assign({},r,{approvedBy:me,approvedAt:Date.now()})]);
+    t.update(ref,upd);});toast("Receipt approved");}catch(e){toast("Failed");}});}
+function rejectReceipt(slipId,rid){askApproval("Reject this receipt?",async()=>{const ref=fdb.collection(C_SLIPS).doc(slipId);
+  try{await fdb.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)return;const s=d.data();t.update(ref,{pendingReceipts:(s.pendingReceipts||[]).filter(x=>x.id!==rid)});});toast("Receipt rejected");}catch(e){toast("Failed");}});}
+async function doDeposit(id,qty,date,note){const ref=fdb.collection(C_SLIPS).doc(id);
+  try{await fdb.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)return;const s=d.data();
+    const bc=Math.min(s.andar||0,(s.andarDep||0)+qty);
+    const receipts=(s.receipts||[]).concat([{qty,date,note:("Andar deposited"+(note?" · "+note:"")),by:me,at:Date.now(),kind:"deposit"}]);
+    t.update(ref,{andarDep:bc,receipts});});toast("Andar deposited");}catch(e){toast("Failed — check connection");}}
+function delSlip(id){askApproval("Delete this recorded slip? This cannot be undone.",async()=>{try{await fdb.collection(C_SLIPS).doc(id).delete();toast("Deleted");}catch(e){toast("Failed");}});}
+async function editNarr(id,val){try{await fdb.collection(C_SLIPS).doc(id).update({narr:val.trim()});}catch(e){toast("Failed");}}
+
+/* add-form handlers */
+function rwTotal(){document.getElementById("rw-total").textContent=n(document.getElementById("rw-bahar").value)+n(document.getElementById("rw-andar").value);}
+function addRewash(){const bahar=n(document.getElementById("rw-bahar").value),andar=n(document.getElementById("rw-andar").value);if(bahar+andar<=0){toast("Enter bahar or andar");return;}
+  addSlip("rewash",{date:document.getElementById("rw-date").value||today(),bahar,andar,given:bahar+andar,narr:document.getElementById("rw-narr").value.trim()});
+  document.getElementById("rw-bahar").value="";document.getElementById("rw-andar").value="";document.getElementById("rw-narr").value="";rwTotal();}
+function addDefect(){const q=n(document.getElementById("df-qty").value);if(q<=0){toast("Enter pieces");return;}
+  addSlip("defect",{date:document.getElementById("df-date").value||today(),given:q,narr:document.getElementById("df-narr").value.trim()});
+  document.getElementById("df-qty").value="";document.getElementById("df-narr").value="";}
+function addSample(){const q=n(document.getElementById("sm-qty").value);if(q<=0){toast("Enter pieces");return;}
+  addSlip("sample",{date:document.getElementById("sm-date").value||today(),given:q,lot:document.getElementById("sm-lot").value.trim(),narr:document.getElementById("sm-narr").value.trim()});
+  document.getElementById("sm-qty").value="";document.getElementById("sm-lot").value="";document.getElementById("sm-narr").value="";}
+
+/* receive autocomplete + dynamic entry */
+function matchSlips(q){q=q.toLowerCase();
+  return slips.filter(s=>s.approved).filter(s=>(s.no||"").toLowerCase().includes(q)||s.type.includes(q)||(s.lot||"").toLowerCase().includes(q)||(s.narr||"").toLowerCase().includes(q)||(s.date||"").includes(q))
+    .sort((a,b)=>{const A=(a.no||"").toLowerCase().startsWith(q)?0:1,B=(b.no||"").toLowerCase().startsWith(q)?0:1;return A-B||(b.createdAt||0)-(a.createdAt||0);});}
+function rcInput(){const q=document.getElementById("rc-no").value.trim();const drop=document.getElementById("rc-drop");
+  rcSlip=null;document.getElementById("rc-found").innerHTML="";document.getElementById("rc-entry").innerHTML="";
+  if(!q){drop.style.display="none";drop.innerHTML="";return;}
+  const m=matchSlips(q);
+  if(!m.length){drop.innerHTML='<div class="opt none">No matching slip</div>';drop.style.display="block";return;}
+  drop.innerHTML=m.slice(0,10).map(s=>{const bal=totalOf(s)-recvOf(s);return `<div class="opt" onclick="rcPick('${s._id}')"><b>${esc(s.no)}</b><span class="ty">${s.type}</span><span class="bal">${bal} bal</span></div>`;}).join("");
+  drop.style.display="block";}
+function rcPick(id){const s=slipById(id);if(!s)return;rcSlip=s;
+  document.getElementById("rc-no").value=s.no;document.getElementById("rc-drop").style.display="none";
+  const total=totalOf(s),left=total-recvOf(s);
+  document.getElementById("rc-found").innerHTML=`<div class="found"><div class="r"><b>${esc(s.no)} · ${s.type}</b><span>${fmtDate(s.date)}</span></div><div class="r"><span>Given</span><b class="num">${total}</b></div><div class="r"><span>Received</span><b class="num">${recvOf(s)}</b></div><div class="r"><span>Balance</span><b class="num" style="color:${left>0?'var(--amber)':'var(--ok)'}">${left}</b></div>${s.narr?`<div class="r" style="color:var(--muted)">${esc(s.narr)}</div>`:""}</div>`;
+  const rem=remain(s);let fields;
+  if(s.type==="rewash"){
+    fields=`<div class="row"><div class="fld"><label>Andar received <span style="color:var(--muted)">(${rem.andar} left)</span></label><input type="number" inputmode="numeric" id="rc-andar" placeholder="0"></div>
+      <div class="fld"><label>Bahar received <span style="color:var(--muted)">(${rem.bahar} left)</span></label><input type="number" inputmode="numeric" id="rc-bahar" placeholder="0"></div></div>`;
+  }else{fields=`<div class="fld full"><label>Received qty <span style="color:var(--muted)">(${rem.qty} left)</span></label><input type="number" inputmode="numeric" id="rc-qty" placeholder="0"></div>`;}
+  document.getElementById("rc-entry").innerHTML=`${fields}<div class="row"><div class="fld"><label>Date</label><input type="date" id="rc-date"></div></div><div class="fld full"><label>Note (optional)</label><input type="text" id="rc-note"></div><button class="btn-primary denim" onclick="recordFromTab()">Send for approval</button>`;
+  document.getElementById("rc-date").value=today();
+  if(left<=0)toast("This slip is already fully received");}
+function recordFromTab(){if(!rcSlip){toast("Pick a slip first");return;}const s=rcSlip,rem=remain(s);let parts;
+  if(s.type==="rewash"){const a=n(document.getElementById("rc-andar").value),b=n(document.getElementById("rc-bahar").value);if(a+b<=0){toast("Enter andar or bahar received");return;}
+    if(a>rem.andar){toast(`Only ${rem.andar} andar pending`);return;}if(b>rem.bahar){toast(`Only ${rem.bahar} bahar pending`);return;}parts={andar:a,bahar:b};}
+  else{const q=n(document.getElementById("rc-qty").value);if(q<=0){toast("Enter received qty");return;}if(q>rem.qty){toast(`Only ${rem.qty} pending`);return;}parts={qty:q};}
+  queueReceipt(s._id,parts,document.getElementById("rc-date").value||today(),document.getElementById("rc-note").value.trim());
+  document.getElementById("rc-no").value="";document.getElementById("rc-found").innerHTML="";document.getElementById("rc-entry").innerHTML="";rcSlip=null;}
+
+/* render */
+function switchTab(t){tab=t;document.querySelectorAll("[data-panel]").forEach(p=>p.style.display=p.dataset.panel===t?"":"none");document.querySelectorAll(".tab").forEach(b=>b.dataset.active=b.dataset.tab===t?"1":"0");render();}
+function render(){renderSummary();renderList("rewash","rw-list");renderList("defect","df-list");renderList("sample","sm-list");renderReceipts();
+  if(tab==="collect")renderCollect();if(tab==="approve")renderApprove();if(tab==="months")renderMonths();if(tab==="find")renderFinder();
+  const ps=slips.filter(s=>!s.approved).length;let pr=0;slips.forEach(s=>{if(s.approved)pr+=(s.pendingReceipts||[]).length;});const totP=ps+pr;
+  const pt=document.getElementById("pendtag");if(pt)pt.textContent=totP?` · ${totP} to approve`:"";
+  const at=document.getElementById("tab-approve");if(at)at.textContent="Approve"+(totP?` (${totP})`:"");}
+function collectData(){const A=slips.filter(s=>s.approved);let wash=0,stitch=0,dep=0;const wl=[],sl=[],dl=[];
+  A.forEach(s=>{if(s.type==="rewash"){const wp=washPendOf(s);if(wp>0){wash+=wp;wl.push({s,q:wp});}const dd=Math.max(0,(s.andar||0)-(s.andarDep||0));if(dd>0){dep+=dd;dl.push({s,q:dd});}}
+    else if(s.type==="sample"){const wp=washPendOf(s);if(wp>0){wash+=wp;wl.push({s,q:wp});}}
+    else if(s.type==="defect"){const sp=Math.max(0,(s.given||0)-(s.received||0));if(sp>0){stitch+=sp;sl.push({s,q:sp});}}});
+  return{wash,stitch,dep,wl,sl,dl};}
+function renderSummary(){const el=document.getElementById("summary");let cards;
+  if(tab==="collect"){const c=collectData();const pc=slips.filter(s=>!s.approved).length;
+    cards=[["From wash",c.wash,""],["From stitch",c.stitch,""],["From deposit",c.dep,"warn"],["Awaiting approval",pc,pc?"warn":""]];
+  }else{const A=slips.filter(s=>s.approved);
+    if(tab==="rewash"){const rw=A.filter(s=>s.type==="rewash");
+      cards=[["Sent",rw.reduce((a,s)=>a+totalOf(s),0),""],["Received",rw.reduce((a,s)=>a+recvOf(s),0),""],["To deposit",rw.reduce((a,s)=>a+Math.max(0,(s.andar||0)-(s.andarDep||0)),0),"warn"],["Open",rw.filter(s=>!isDone(s)).length,""]];
+    }else if(tab==="defect"||tab==="sample"){const a=A.filter(s=>s.type===tab);const g=a.reduce((x,s)=>x+totalOf(s),0),r=a.reduce((x,s)=>x+recvOf(s),0);
+      cards=[["Sent",g,""],["Received",r,""],["Pending",g-r,(g-r)?"warn":""],["Open slips",a.filter(s=>!isDone(s)).length,""]];
+    }else{const g=A.reduce((a,s)=>a+totalOf(s),0),r=A.reduce((a,s)=>a+recvOf(s),0);
+      cards=[["All sent",g,""],["All received",r,""],["Pending",g-r,(g-r)?"warn":""],["Open slips",A.filter(s=>!isDone(s)).length,""]];}}
+  el.innerHTML=cards.map(c=>`<div class="stat ${c[2]}"><div class="v num">${c[1]}</div><div class="l">${c[0]}</div></div>`).join("");}
+function brkList(arr,unit){if(!arr.length)return `<div class="brk">Nothing pending here.</div>`;
+  return `<div class="brk">`+arr.sort((a,b)=>b.q-a.q).map(x=>`<div class="b1"><span>${esc(x.s.no)} · ${x.s.type}${x.s.lot?" · "+esc(x.s.lot):""}</span><b class="num">${x.q} pc</b></div>`).join("")+`</div>`;}
+function renderCollect(){const c=collectData();const el=document.getElementById("col-body");
+  el.innerHTML=`
+    <div class="big wash"><div class="bv num">${c.wash}</div><div><div class="bl">Take from Wash</div><div class="bs">rewash + sample pieces still at washing</div></div></div>
+    ${brkList(c.wl)}
+    <div class="big stitch"><div class="bv num">${c.stitch}</div><div><div class="bl">Take from Stitch</div><div class="bs">defect pieces still at stitching</div></div></div>
+    ${brkList(c.sl)}
+    <div class="big dep"><div class="bv num">${c.dep}</div><div><div class="bl">Get from Deposit</div><div class="bs">andar pieces not yet deposited</div></div></div>
+    ${brkList(c.dl)}`;}
+function logHtml(rc){if(!rc||!rc.length)return"";return `<div class="log">`+rc.slice().reverse().map(l=>{const extra=(l.andar||l.bahar)?` (A:${l.andar||0} B:${l.bahar||0})`:"";return `<div class="log-item"><span>+${l.qty} pc${extra}${l.note?" — "+esc(l.note):""}${l.by?" · "+esc(l.by):""}</span><span class="num">${fmtDate(l.date)}</span></div>`;}).join("")+`</div>`;}
+function pendCard(s){const total=totalOf(s);
+  return `<div class="slip" style="border-left:4px solid var(--amber)">
+    <div class="slip-top"><div><span class="slip-no" style="background:var(--amber-tint);color:var(--amber)">PENDING</span>
+      <div class="slip-qty num">${total}<small> pc ${s.type==="rewash"?"to rewash":"sent"}</small></div>
+      <div class="slip-date">${fmtDate(s.date)}${s.lot?" · "+esc(s.lot):""} · by ${esc(s.createdBy||"")}</div></div>
+      <span class="badge open">Pending</span></div>
+    ${s.type==="rewash"?`<div class="splits">${s.bahar?`<span class="chip bahar">Bahar <b>${s.bahar}</b></span>`:""}${s.andar?`<span class="chip andar">Andar <b>${s.andar}</b></span>`:""}</div>`:""}
+    ${s.narr?`<div class="narr">${esc(s.narr)}</div>`:""}
+    <div class="slip-acts"><button class="act ok" onclick="approveSlip('${s._id}')">Approve</button><button class="act" onclick="openEditor('${s._id}')">Edit</button><button class="act del" onclick="rejectSlip('${s._id}')">Reject</button></div>
+  </div>`;}
+function receiptPendCard(s,r){const ab=(r.andar||r.bahar)?` (A:${r.andar||0} B:${r.bahar||0})`:"";
+  return `<div class="slip" style="border-left:4px solid var(--amber)">
+    <div class="slip-top"><div><span class="slip-no">${esc(s.no)}</span> <span class="chip ret" style="margin-left:6px">+${r.qty} pc${ab}</span>
+      <div class="slip-date" style="margin-top:6px">${fmtDate(r.date)} · by ${esc(r.by||"")}${r.note?" · "+esc(r.note):""}</div></div>
+      <span class="badge open">Receipt</span></div>
+    <div class="slip-acts"><button class="act ok" onclick="approveReceipt('${s._id}','${r.id}')">Approve</button><button class="act del" onclick="rejectReceipt('${s._id}','${r.id}')">Reject</button></div>
+  </div>`;}
+function renderApprove(){const el=document.getElementById("ap-body");
+  const ps=slips.filter(s=>!s.approved);
+  const pr=[];slips.forEach(s=>{if(!s.approved)return;(s.pendingReceipts||[]).forEach(r=>pr.push({s,r}));});
+  let html=`<div class="list-head"><h3 style="color:var(--amber)">Pending slips (${ps.length})</h3></div>`;
+  html+=ps.length?ps.map(pendCard).join(""):`<div class="empty">No slips waiting</div>`;
+  html+=`<div class="list-head"><h3 style="color:var(--amber)">Pending receipts (${pr.length})</h3></div>`;
+  html+=pr.length?pr.sort((a,b)=>(b.r.at||0)-(a.r.at||0)).map(x=>receiptPendCard(x.s,x.r)).join(""):`<div class="empty">No receipts waiting</div>`;
+  el.innerHTML=html;}
+function openEditor(id){askApproval("Edit this slip?",()=>{const s=slipById(id);if(!s)return;
+  let fields;
+  if(s.type==="rewash"){fields=`<div class="row"><div class="fld"><label>Bahar</label><input type="number" inputmode="numeric" id="e-bahar" value="${s.bahar||0}"></div><div class="fld"><label>Andar</label><input type="number" inputmode="numeric" id="e-andar" value="${s.andar||0}"></div></div>`;}
+  else{fields=`<div class="fld"><label>Pieces</label><input type="number" inputmode="numeric" id="e-qty" value="${s.given||0}"></div>`+(s.type==="sample"?`<div class="fld full"><label>Lot / ref</label><input type="text" id="e-lot" value="${esc(s.lot||"")}"></div>`:"");}
+  showModal(`<h2>Edit slip · ${esc(s.no||"pending")}</h2><div style="height:8px"></div>
+    <div class="fld"><label>Date</label><input type="date" id="e-date" value="${s.date||today()}"></div>
+    ${fields}
+    <div class="fld full"><label>Narration</label><textarea id="e-narr" style="min-height:70px;width:100%;padding:11px;border:1.5px solid var(--line);border-radius:10px">${esc(s.narr||"")}</textarea></div>
+    <div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-fill" id="eok">Save</button></div>`);
+  document.getElementById("eok").onclick=async()=>{const upd={date:document.getElementById("e-date").value||today(),narr:document.getElementById("e-narr").value.trim()};
+    if(s.type==="rewash"){const b=n(document.getElementById("e-bahar").value),a=n(document.getElementById("e-andar").value);if(a+b<=0){toast("Enter qty");return;}
+      upd.bahar=b;upd.andar=a;upd.given=a+b;upd.recvAndar=Math.min(s.recvAndar||0,a);upd.recvBahar=Math.min(s.recvBahar||0,b);upd.received=upd.recvAndar+upd.recvBahar;upd.andarDep=Math.min(s.andarDep||0,a);}
+    else{const q=n(document.getElementById("e-qty").value);if(q<=0){toast("Enter qty");return;}upd.given=q;upd.received=Math.min(s.received||0,q);if(s.type==="sample")upd.lot=document.getElementById("e-lot").value.trim();}
+    try{await fdb.collection(C_SLIPS).doc(id).update(upd);closeModal();toast("Slip updated");}catch(e){toast("Failed");}};});}
+function cardHTML(s){const type=s.type,total=totalOf(s),done=isDone(s),recv=recvOf(s),bal=total-recv,dep=Math.max(0,(s.andar||0)-(s.andarDep||0)),wp=washPendOf(s);const ps=pendSum(s);
+  const rl=(s.receipts||[]).filter(r=>!isDep(r));const recvList=rl.length?`<div class="rcv"><div class="rcv-h">Received back on</div>`+rl.slice().sort((a,b)=>(a.at||0)-(b.at||0)).map(r=>`<div class="rcv-i"><span>${fmtDate(r.date)}${r.note?" · "+esc(r.note):""}</span><b class="num">+${r.qty}</b></div>`).join("")+`</div>`:"";
+  return `<div class="slip">
+    <div class="slip-top"><div><span class="slip-no">${esc(s.no)}</span>
+      <div class="slip-qty num">${total}<small> pc sent</small></div>
+      <div class="slip-date">${fmtDate(s.date)}${s.lot?" · "+esc(s.lot):""}</div></div>
+      <span class="badge ${done?"done":"open"}">${done?"Completed":"Open"}</span></div>
+    <div class="recv-row"><span>Received <b class="num">${recv}</b> / ${total}</span><span>${type==="rewash"?"In washing":"Balance"} <b class="num" style="color:${bal>0?'var(--amber)':'var(--ok)'}">${bal}</b></span></div>
+    ${type==="rewash"&&dep>0?`<div class="recv-row" style="margin-top:6px;background:var(--amber-tint);color:var(--amber)"><span>Still to deposit</span><b class="num">${dep}</b></div>`:""}
+    ${ps.q>0?`<div class="hintchip">${ps.q} pc awaiting your approval</div>`:""}
+    ${s.narr?`<div class="narr">${esc(s.narr)}</div>`:""}
+    ${recvList}
+    <div class="slip-acts">
+      ${wp>0?`<button class="act go" onclick="modalReceive(slipById('${s._id}'))">Receive</button>`:""}
+      ${type==="rewash"&&dep>0?`<button class="act go" onclick="depositPrompt('${s._id}')">Deposit andar</button>`:""}
+      ${type==="rewash"?`<button class="act" onclick="abChart('${s._id}')">A / B chart</button>`:""}
+      <button class="act" onclick="printSlip('${s._id}')">Print</button>
+      <button class="act" onclick="openEditor('${s._id}')">Edit</button>
+      <button class="act del" onclick="delSlip('${s._id}')">Delete</button>
+    </div></div>`;}
+function abChart(id){const s=slipById(id);if(!s)return;const A=s.andar||0,B=s.bahar||0,rA=s.recvAndar||0,rB=s.recvBahar||0,dA=s.andarDep||0;
+  const bar=(v,t,c)=>{const p=t?Math.round(v/t*100):0;return `<div class="abbar"><i style="background:${c};width:${p}%"></i><span>${v} / ${t}</span></div>`;};
+  showModal(`<h2>Andar / Bahar · ${esc(s.no)}</h2><div class="msub">Breakdown for this rewash slip</div>
+    <div style="font-weight:800;color:var(--denim-dark)">Andar (from deposited lots) — ${A} pc</div>
+    <div class="abrow"><div style="font-size:12px;color:var(--muted)">Received from wash</div>${bar(rA,A,'var(--ok)')}<div style="font-size:12px;color:var(--muted);margin-top:6px">Deposited back</div>${bar(dA,A,'var(--denim)')}</div>
+    <div style="font-weight:800;color:var(--amber)">Bahar (not deposited) — ${B} pc</div>
+    <div class="abrow"><div style="font-size:12px;color:var(--muted)">Received from wash</div>${bar(rB,B,'var(--ok)')}</div>
+    <div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Close</button></div>`);}
+function renderList(type,elId){const el=document.getElementById(elId);const appr=slips.filter(s=>s.type===type&&s.approved);
+  el.innerHTML=appr.length?appr.map(cardHTML).join(""):`<div class="empty"><b>No recorded ${type} slips</b>New entries appear here after you approve them.</div>`;}
+function notePrompt(id){const s=slipById(id);if(s)modalText("Edit narration · "+(s.no||"pending"),s.narr||"",v=>editNarr(id,v));}
+function depositPrompt(id){const s=slipById(id);if(!s)return;const left=(s.andar||0)-(s.andarDep||0);
+  showModal(`<h2>Deposit andar · ${esc(s.no)}</h2><div class="msub">Andar pending deposit: ${left} of ${s.andar}</div>
+    <div class="fld"><label>Deposited qty</label><input type="number" inputmode="numeric" id="mq"></div>
+    <div class="fld"><label>Date</label><input type="date" id="md"></div>
+    <div class="fld"><label>Note (optional)</label><input type="text" id="mn"></div>
+    ${pwFieldHTML()}
+    <div class="modal-acts"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-fill" id="mok">Save</button></div>`);
+  document.getElementById("md").value=today();
+  document.getElementById("mok").onclick=()=>{const q=n(document.getElementById("mq").value);if(q<=0){toast("Enter qty");return;}if(q>left){toast(`Only ${left} andar pending deposit`);return;}if(!pwOk())return;doDeposit(id,q,document.getElementById("md").value||today(),document.getElementById("mn").value.trim());closeModal();};}
+function renderReceipts(){const el=document.getElementById("rc-list");if(!el)return;const all=[];
+  slips.forEach(s=>{if(!s.approved)return;(s.receipts||[]).forEach(r=>{if(!isDep(r))all.push(Object.assign({no:s.no,type:s.type},r));});});
+  all.sort((a,b)=>(b.at||0)-(a.at||0));
+  if(!all.length){el.innerHTML=`<div class="empty"><b>No receipts yet</b>Record one above.</div>`;return;}
+  el.innerHTML=all.slice(0,40).map(r=>{const extra=(r.andar||r.bahar)?` (A:${r.andar||0} B:${r.bahar||0})`:"";return `<div class="slip" style="padding:11px 14px"><div class="slip-top"><div><span class="slip-no">${esc(r.no)}</span> <span class="chip ret" style="margin-left:6px">+${r.qty} pc${extra}</span></div><span class="slip-date">${fmtDate(r.date)}</span></div>${(r.note||r.by)?`<div class="slip-date" style="margin-top:6px">${esc(r.note||"")}${r.by?" · "+esc(r.by):""}</div>`:""}</div>`;}).join("");}
+function renderFinder(){const el=document.getElementById("fn-list");if(!el)return;const q=(document.getElementById("fn-q").value||"").trim();
+  let arr=slips.filter(s=>s.approved);if(q)arr=matchSlips(q);
+  el.innerHTML=arr.length?arr.slice(0,60).map(cardHTML).join(""):`<div class="empty"><b>No slips found</b>Try a different search.</div>`;}
+
+/* print */
+function copyHTML(s,label){const total=totalOf(s),recv=recvOf(s),bal=total-recv;
+  const allr=(s.receipts||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));
+  const washr=allr.filter(r=>!isDep(r)),depr=allr.filter(isDep);
+  const dateRows=(list,head)=>list.length?`<tr><td colspan="2" style="font-size:8.5pt;color:#555;font-weight:700;padding-top:5px">${head}</td></tr>`+list.slice(-4).map(r=>`<tr><td>${fmtDate(r.date)}</td><td>+${r.qty} pc</td></tr>`).join(""):"";
+  let body;
+  if(s.type==="rewash"){const deptot=s.andar||0,depd=s.andarDep||0,depleft=Math.max(0,deptot-depd);
+    body=`<table class="pr-t">
+      <tr><td colspan="2" style="background:#EAF0F8;font-weight:800;color:#1A3560">WASHING</td></tr>
+      <tr><td>Sent to wash</td><td>${total}</td></tr>
+      <tr><td>Received back</td><td>${recv}</td></tr>
+      <tr><td style="font-weight:800">Remaining in wash</td><td style="font-weight:800">${bal}</td></tr>
+      ${dateRows(washr,"Received back on:")}`
+      +(deptot>0?`<tr><td colspan="2" style="background:#FBF0DE;font-weight:800;color:#8a5a12">DEPOSIT</td></tr>
+      <tr><td>To deposit</td><td>${deptot}</td></tr>
+      <tr><td>Deposited</td><td>${depd}</td></tr>
+      <tr><td style="font-weight:800">Remaining to deposit</td><td style="font-weight:800">${depleft}</td></tr>
+      ${dateRows(depr,"Deposited on:")}`:"")
+      +`</table>`;
+  }else{body=`<table class="pr-t">
+      <tr><td>Pieces sent</td><td>${total}</td></tr>
+      <tr><td>Received</td><td>${recv}</td></tr>
+      <tr><td style="font-weight:800">Remaining (pending)</td><td style="font-weight:800">${bal}</td></tr>
+      ${s.type==="sample"?`<tr><td>Lot / Ref</td><td>${esc(s.lot||"-")}</td></tr>`:""}
+      ${dateRows(washr,"Received on:")}</table>`;}
+  return `<div class="copy">
+    <div class="pr-head"><div><div class="pr-co">UTH CULTURE</div><div class="pr-sub">Rewash &amp; Petty Register</div></div><div class="pr-label">${label}</div></div>
+    <div class="pr-type">${TYPENAME[s.type]}</div>
+    <div class="pr-no"><span>Slip No:</span><b>${esc(s.no||"-")}</b><span style="margin-left:auto">Date:</span><b>${fmtDate(s.date)}</b></div>
+    ${body}
+    ${s.narr?`<div class="pr-narr"><b>Narration:</b> ${esc(s.narr)}</div>`:""}
+    <div class="pr-sign"><span>Given by: ____________________</span><span>Received by: ____________________</span></div>
+  </div>`;}
+function printSlip(id){const s=slipById(id);if(!s)return;
+  document.getElementById("printArea").innerHTML=copyHTML(s,"OFFICE COPY")+`<div class="tear"></div>`+copyHTML(s,"RECIPIENT COPY");
+  window.print();}
+
+/* month tracker */
+function renderMonths(){const mo=document.getElementById("mo-pick").value||today().slice(0,7);const ty=document.getElementById("mo-type").value;
+  const A=slips.filter(s=>s.approved);
+  const given=A.filter(s=>monthOf(s.date)===mo&&(ty==="all"||s.type===ty));
+  const recv=[];A.forEach(s=>{if(ty!=="all"&&s.type!==ty)return;(s.receipts||[]).forEach(r=>{if(monthOf(r.date)===mo)recv.push(Object.assign({no:s.no,type:s.type},r));});});
+  const gTot=given.reduce((a,s)=>a+totalOf(s),0),rTot=recv.reduce((a,r)=>a+r.qty,0);
+  let html=`<div class="summary"><div class="stat"><div class="v num">${given.length}</div><div class="l">Slips given</div></div><div class="stat"><div class="v num">${gTot}</div><div class="l">Pieces given</div></div><div class="stat"><div class="v num">${recv.length}</div><div class="l">Receipts</div></div><div class="stat"><div class="v num">${rTot}</div><div class="l">Pieces received</div></div></div>`;
+  html+=`<div class="list-head"><h3>Given in ${mo}</h3></div>`;
+  html+=given.length?given.map(s=>`<div class="slip" style="padding:11px 14px"><div class="slip-top"><div><span class="slip-no">${esc(s.no)}</span> <b class="num" style="margin-left:6px">${totalOf(s)} pc</b> <span class="chip" style="margin-left:4px">${s.type}</span></div><span class="slip-date">${fmtDate(s.date)}</span></div>${s.narr?`<div class="slip-date" style="margin-top:5px">${esc(s.narr)}</div>`:""}</div>`).join(""):`<div class="empty">No slips given this month</div>`;
+  html+=`<div class="list-head"><h3>Received in ${mo}</h3></div>`;
+  html+=recv.length?recv.sort((a,b)=>(b.at||0)-(a.at||0)).map(r=>`<div class="slip" style="padding:11px 14px"><div class="slip-top"><div><span class="slip-no">${esc(r.no)}</span> <span class="chip ret" style="margin-left:6px">+${r.qty} pc</span> <span class="chip" style="margin-left:4px">${r.type}</span></div><span class="slip-date">${fmtDate(r.date)}</span></div>${(r.note||r.by)?`<div class="slip-date" style="margin-top:5px">${esc(r.note||"")}${r.by?" · "+esc(r.by):""}</div>`:""}</div>`).join(""):`<div class="empty">No receipts this month</div>`;
+  document.getElementById("mo-body").innerHTML=html;}
+function download(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+function exportMonthCSV(){const mo=document.getElementById("mo-pick").value||today().slice(0,7),ty=document.getElementById("mo-type").value;const A=slips.filter(s=>s.approved);
+  let rows=[["Record","Slip No","Type","Date","Bahar","Andar","Given","Qty","Received total","Balance","Note/Narration","By"]];
+  A.filter(s=>monthOf(s.date)===mo&&(ty==="all"||s.type===ty)).forEach(s=>rows.push(["GIVEN",s.no,s.type,s.date,s.bahar||"",s.andar||"",totalOf(s),"",recvOf(s),totalOf(s)-recvOf(s),s.narr||"",s.createdBy||""]));
+  A.forEach(s=>{if(ty!=="all"&&s.type!==ty)return;(s.receipts||[]).forEach(r=>{if(monthOf(r.date)===mo)rows.push(["RECEIVED",s.no,s.type,r.date,"","","",r.qty,"","",r.note||"",r.by||""]);});});
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  download("UTH_rewash_"+mo+".csv","\ufeff"+csv,"text/csv");toast("Exported "+mo);}
+
+/* settings */
+function openSettings(){askApproval("Open settings?",()=>{const c=cfgCache||{};
+  showModal(`<h2>Settings</h2><div class="msub">Signed in as ${esc(me||"—")}.</div>
+    <div class="toggle"><span>Remember approval password<br><span style="font-size:11.5px;color:var(--muted);font-weight:400">Skip re-typing it until you sign out</span></span><div class="sw ${rememberPw?"on":""}" id="sw-rem" onclick="toggleRemember()"></div></div>
+    <div style="height:6px;border-top:1px solid var(--line-soft);margin:6px 0 12px"></div>
+    <div class="fld"><label>Access password (staff)</label><input id="c-pw" value="${esc(c.password||"")}"></div>
+    <div class="fld"><label>Approval password (yours)</label><input id="c-pin" value="${esc(c.approvePw||c.adminPin||"")}"></div>
+    <button class="btn-primary denim" id="cok" style="margin-bottom:10px">Save passwords</button>
+    <button class="btn-primary" style="background:var(--line-soft);color:var(--ink)" onclick="signOut()">Sign out of this device</button>`);
+  document.getElementById("cok").onclick=async()=>{const pw=document.getElementById("c-pw").value.trim(),ap=document.getElementById("c-pin").value.trim();if(pw.length<3||ap.length<3){toast("3+ chars needed");return;}
+    try{await fdb.collection(C_CFG).doc("access").set({password:pw,approvePw:ap,at:Date.now()},{merge:true});cfgCache=Object.assign({},cfgCache,{password:pw,approvePw:ap});closeModal();toast("Updated");}catch(e){toast("Failed");}};});}
+function toggleRemember(){rememberPw=!rememberPw;sessionStorage.setItem("uth_rw_remember",rememberPw?"1":"0");if(!rememberPw)approveUnlocked=false;const sw=document.getElementById("sw-rem");if(sw)sw.className="sw "+(rememberPw?"on":"");}
+function signOut(){sessionStorage.removeItem("uth_rw_ok");sessionStorage.removeItem("uth_rw_remember");location.reload();}
+
+/* auth */
+async function boot(){
+  if(!cfgOk()){lockMsg("Add Firebase config","Paste your Firebase config in the file where marked, then reload.");return;}
+  try{firebase.initializeApp(firebaseConfig);fdb=firebase.firestore();fdb.enablePersistence({synchronizeTabs:true}).catch(()=>{});}
+  catch(e){lockMsg("Setup error",e.message);return;}
+  let cfg;try{const d=await fdb.collection(C_CFG).doc("access").get();cfg=d.exists?d.data():null;}
+  catch(e){lockMsg("Connection error","Could not reach Firebase. Check config, internet and Firestore rules.");return;}
+  if(!cfg){setupScreen();return;}
+  if(sessionStorage.getItem("uth_rw_ok")==="1"){cfgCache=cfg;unlock();return;}
+  loginScreen();}
+function lockMsg(t,s){document.getElementById("lock-box").innerHTML=`<h2>${esc(t)}</h2><p>${esc(s)}</p>`;}
+function setupScreen(){document.getElementById("lock-box").innerHTML=`<h2>First-time setup</h2><p>Set two passwords, once. Staff open the app with the access password; you approve slips and receipts with the approval password.</p>
+  <div class="fld"><label>Your name</label><input id="s-name" placeholder="e.g. Samarth"></div>
+  <div class="fld"><label>Access password (for staff)</label><input id="s-pw"></div>
+  <div class="fld"><label>Approval password (yours)</label><input id="s-pin"></div>
+  <button class="btn-primary denim" id="s-go">Create register</button>`;
+  document.getElementById("s-go").onclick=async()=>{const pw=document.getElementById("s-pw").value.trim(),ap=document.getElementById("s-pin").value.trim(),nm=document.getElementById("s-name").value.trim();
+    if(pw.length<3||ap.length<3){toast("Each password must be 3+ chars");return;}
+    try{const data={password:pw,approvePw:ap,setupBy:nm,at:Date.now()};await fdb.collection(C_CFG).doc("access").set(data);cfgCache=data;
+      me=nm||"owner";sessionStorage.setItem("uth_rw_user",me);sessionStorage.setItem("uth_rw_ok","1");unlock();}
+    catch(e){toast("Could not save — check Firestore rules");}};}
+function loginScreen(){document.getElementById("lock-box").innerHTML=`<h2>Enter password</h2><p>UTH Rewash &amp; Petty Register</p>
+  <div class="fld"><label>Your name</label><input id="l-name" placeholder="e.g. Ramesh" value="${esc(me)}"></div>
+  <div class="fld"><label>Access password</label><input id="l-pw" type="password" placeholder="••••••"></div>
+  <div id="l-err" style="color:#c0392b;font-size:13px;font-weight:600;margin:-4px 0 12px;display:none"></div>
+  <button class="btn-primary denim" id="l-go">Open register</button>`;
+  const go=async()=>{const pw=document.getElementById("l-pw").value.trim(),nm=document.getElementById("l-name").value.trim();
+    const c=(await fdb.collection(C_CFG).doc("access").get()).data();cfgCache=c;
+    if(pw.toLowerCase()===(c.password||"").toLowerCase()){me=nm||"staff";sessionStorage.setItem("uth_rw_user",me);sessionStorage.setItem("uth_rw_ok","1");unlock();}
+    else{const e=document.getElementById("l-err");e.textContent="Wrong password";e.style.display="block";}};
+  document.getElementById("l-go").onclick=go;document.getElementById("l-pw").addEventListener("keydown",e=>{if(e.key==="Enter")go();});}
+function unlock(){document.getElementById("lock").style.display="none";
+  document.getElementById("who").textContent=me?("Signed in · "+me):"UTH Culture";
+  ["rw-date","df-date","sm-date"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=today();});
+  document.getElementById("mo-pick").value=today().slice(0,7);
+  fdb.collection(C_CFG).doc("access").onSnapshot(d=>{if(d.exists)cfgCache=d.data();});
+  fdb.collection(C_SLIPS).orderBy("createdAt","desc").onSnapshot({includeMetadataChanges:true},
+    snap=>{slips=snap.docs.map(d=>Object.assign({_id:d.id},d.data()));document.getElementById("live").className="live";render();},
+    ()=>{document.getElementById("live").className="live off";});
+  switchTab("collect");}
+
+boot();
+</script>
+</body>
+</html>
