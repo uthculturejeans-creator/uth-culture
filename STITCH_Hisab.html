@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>STITCH हिसाब — Tuhi Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --denim-900:#141d33; --denim-800:#1c2947; --denim-700:#26385f; --denim-600:#33528f;
+  --denim-500:#3f63a8; --denim-300:#8aa4d6; --denim-100:#dbe4f4;
+  --gold:#d6a419; --gold-dark:#b0850e; --gold-soft:#fbf1cf;
+  --paper:#eef1f6; --card:#ffffff; --ink:#171f30; --muted:#6b768c; --line:#dde3ee;
+  --good:#1f8a54; --good-soft:#e2f4ea; --bad:#c0392b; --bad-soft:#fbe6e3;
+  --warn:#b8710b; --warn-soft:#fbefd8;
+  --r:14px; --shadow:0 1px 2px rgba(20,29,51,.06),0 6px 22px rgba(20,29,51,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+  -webkit-text-size-adjust:100%; padding-bottom:76px; font-size:15px; line-height:1.45;
+}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:700}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:16px}
+
+/* ---------- top bar ---------- */
+header.top{
+  background:linear-gradient(160deg,var(--denim-800),var(--denim-700));
+  color:#fff;padding:14px 16px 16px;position:sticky;top:0;z-index:40;
+  box-shadow:0 4px 18px rgba(20,29,51,.18);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.stitch-mark{width:30px;height:30px;border-radius:8px;background:var(--gold);position:relative;flex:0 0 auto;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.stitch-mark::before{content:"";position:absolute;inset:6px;border:2px dashed var(--denim-800);border-radius:4px}
+.brand h1{font-family:'Space Grotesk',sans-serif;font-size:19px;letter-spacing:.5px}
+.brand .sub{font-size:11.5px;color:var(--denim-100);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.top .row2{display:flex;gap:8px;margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.top .row2::-webkit-scrollbar{display:none}
+
+/* ---------- tab bar (bottom on mobile) ---------- */
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:45;background:var(--card);
+  border-top:1px solid var(--line);display:flex;justify-content:space-around;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 14px rgba(20,29,51,.07)}
+nav.tabs button{background:none;border:0;color:var(--muted);font-size:10.5px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 6px;border-radius:10px;min-width:56px;letter-spacing:.2px}
+nav.tabs button .ic{font-size:19px;line-height:1}
+nav.tabs button.on{color:var(--denim-600)}
+nav.tabs button.on .ic{transform:translateY(-1px)}
+
+main{max-width:940px;margin:0 auto;padding:16px 14px 30px}
+.view{display:none;animation:fade .18s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ---------- cards & generic ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:16px}
+.section-title{font-family:'Space Grotesk',sans-serif;font-size:13px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);margin:22px 4px 10px;font-weight:600}
+.section-title:first-child{margin-top:2px}
+
+/* KPI grid */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi .lab{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.kpi .val{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:4px}
+.kpi .val small{font-size:14px;font-weight:600;color:var(--muted)}
+.kpi.accent{background:linear-gradient(155deg,var(--denim-700),var(--denim-600));color:#fff;border:0}
+.kpi.accent .lab{color:var(--denim-100)}
+.kpi .tag{position:absolute;top:12px;right:12px;font-size:16px;opacity:.5}
+
+/* buttons */
+.btn{border:0;border-radius:11px;padding:13px 16px;font-weight:700;font-size:15px;letter-spacing:.2px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--gold);color:var(--denim-900)}
+.btn.primary:active{background:var(--gold-dark)}
+.btn.dark{background:var(--denim-700);color:#fff}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--denim-700)}
+.btn.block{width:100%}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+.btn:disabled{opacity:.5}
+
+/* form fields */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.2px}
+.field input,.field select{width:100%;padding:13px 12px;border:1.5px solid var(--line);border-radius:11px;background:#fff;color:var(--ink)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--denim-500);box-shadow:0 0 0 3px rgba(63,99,168,.13)}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.readout{background:var(--denim-900);color:#fff;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin:2px 0 13px}
+.readout .k{font-size:12px;color:var(--denim-100);letter-spacing:.4px}
+.readout .v{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700}
+
+/* chips (stage selector) */
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:#fff;color:var(--denim-700);border-radius:999px;
+  padding:8px 14px;font-weight:600;font-size:13px}
+.chip.on{background:var(--denim-700);border-color:var(--denim-700);color:#fff}
+
+/* pills / status */
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.info{background:var(--denim-100);color:var(--denim-600)}
+.pill.gold{background:var(--gold-soft);color:var(--gold-dark)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff}
+th,td{padding:10px 11px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{background:var(--denim-800);color:#fff;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tbody tr:active{background:var(--denim-100)}
+.tfoot td{background:var(--denim-100);font-weight:700;border-top:2px solid var(--denim-300)}
+
+/* list rows */
+.lrow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .lead{width:44px;height:44px;border-radius:11px;background:var(--denim-100);color:var(--denim-700);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:0 0 auto;font-family:'Space Grotesk',sans-serif}
+.lrow .body{flex:1;min-width:0}
+.lrow .t{font-weight:600;font-size:14.5px}
+.lrow .s{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .end{text-align:right;flex:0 0 auto}
+.lrow .amt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .big{font-size:34px;margin-bottom:8px;opacity:.6}
+.rupee{font-weight:600}
+
+/* toast + modal */
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);
+  background:var(--denim-900);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s;z-index:120;max-width:88%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--bad)} #toast.ok{background:var(--good)}
+.modal-bg{position:fixed;inset:0;background:rgba(20,29,51,.55);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;overflow:auto;
+  padding:18px 16px calc(20px + env(safe-area-inset-bottom));animation:up .25s ease}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.modal h3{font-family:'Space Grotesk',sans-serif;font-size:18px;margin-bottom:4px}
+.modal .mh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.xbtn{background:var(--paper);border:0;width:34px;height:34px;border-radius:50%;font-size:18px;color:var(--muted);flex:0 0 auto}
+
+/* cost breakdown bar */
+.costbar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--line);margin:8px 0}
+.costbar span{display:block;height:100%}
+
+@media(min-width:720px){
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  nav.tabs{position:sticky;top:0;bottom:auto}
+  body{padding-bottom:0}
+  #toast{bottom:30px}
+  .modal-bg{align-items:center}
+  .modal{border-radius:20px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="stitch-mark"></div>
+    <div>
+      <h1>STITCH <span style="color:var(--gold)">हिसाब</span></h1>
+      <div class="sub">Tuhi Collection · Factory Ledger</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="home" class="on"><span class="ic">🏠</span>Home</button>
+  <button data-view="entry"><span class="ic">✏️</span>Work</button>
+  <button data-view="lots"><span class="ic">📦</span>Lots</button>
+  <button data-view="people"><span class="ic">👤</span>Workers</button>
+  <button data-view="more"><span class="ic">⋯</span>More</button>
+</nav>
+
+<main>
+  <!-- ============ HOME ============ -->
+  <section class="view on" id="v-home">
+    <div class="kpis" id="homeKpis"></div>
+    <div class="section-title">Today · <span id="todayStr"></span></div>
+    <div class="card" id="todayCard"></div>
+    <div class="section-title">Money owed to workers</div>
+    <div class="card" id="owedCard"></div>
+  </section>
+
+  <!-- ============ WORK ENTRY ============ -->
+  <section class="view" id="v-entry">
+    <div class="section-title">Record work / payment</div>
+    <div class="card pad">
+      <div class="field">
+        <label>Stage of work</label>
+        <div class="chips" id="stageChips"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Date</label><input type="date" id="e_date"></div>
+        <div class="field"><label>Worker <span id="e_stageTag" style="color:var(--denim-500)"></span></label><select id="e_worker"><option value="">— choose —</option></select></div>
+      </div>
+      <div class="field" style="margin-top:-4px"><button class="btn ghost sm" id="e_addWorker" type="button">+ Worker not listed?</button></div>
+      <div class="field">
+        <label>Lot (unique code) — leave blank for pure advance</label>
+        <select id="e_code"><option value="">— No lot (advance only) —</option></select>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>PIC</label><input type="number" id="e_pic" readonly placeholder="auto"></div>
+        <div class="field"><label>Rate / PIC (₹)</label><input type="number" id="e_rate" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <div class="readout"><span class="k">GROSS हिसाब (PIC × Rate)</span><span class="v num" id="e_gross">₹0</span></div>
+      <div class="field"><label>Amount given now (₹)</label><input type="number" id="e_given" inputmode="decimal" placeholder="0"></div>
+      <div class="readout" style="background:var(--denim-700)"><span class="k" id="e_balLab">BALANCE</span><span class="v num" id="e_bal">₹0</span></div>
+      <div id="e_type" style="margin:-4px 0 12px"></div>
+      <button class="btn primary block" id="e_save">Save entry</button>
+    </div>
+    <div class="section-title">Default rates per stage</div>
+    <div class="card pad" id="rateEditor"></div>
+  </section>
+
+  <!-- ============ LOTS ============ -->
+  <section class="view" id="v-lots">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input id="lotSearch" placeholder="Search sort / lot / code" style="flex:1;padding:12px;border:1.5px solid var(--line);border-radius:11px">
+      <button class="btn dark sm" id="addLotBtn">+ Lot</button>
+    </div>
+    <div id="lotList"></div>
+  </section>
+
+  <!-- ============ WORKERS ============ -->
+  <section class="view" id="v-people">
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <div style="flex:1;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700">Workers</div>
+      <button class="btn dark sm" id="addWorkerBtn">+ Worker</button>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase">Rank by</label>
+      <div class="chips" id="wSortChips" style="margin-top:6px"></div>
+    </div>
+    <div id="workerBoard"></div>
+  </section>
+
+  <!-- ============ MORE ============ -->
+  <section class="view" id="v-more">
+    <div class="section-title">Payroll</div>
+    <div class="card">
+      <div class="lrow" data-more="staff"><div class="lead" style="background:var(--gold-soft);color:var(--gold-dark)">🧑‍🏭</div><div class="body"><div class="t">Fixed staff (monthly salary)</div><div class="s">Salaries, absences, advances & hisab</div></div><div class="end">›</div></div>
+    </div>
+    <div class="section-title">Views & tools</div>
+    <div class="card">
+      <div class="lrow" data-more="date"><div class="lead">📅</div><div class="body"><div class="t">Day book</div><div class="s">Everything that happened on a date</div></div><div class="end">›</div></div>
+      <div class="lrow" data-more="cost"><div class="lead">🧮</div><div class="body"><div class="t">Making cost per lot</div><div class="s">Full cost breakdown across stages</div></div><div class="end">›</div></div>
+      <div class="lrow" data-more="rates"><div class="lead">📊</div><div class="body"><div class="t">Monthly rate report</div><div class="s">Avg rate, pieces & hisab per stage</div></div><div class="end">›</div></div>
+      <div class="lrow" data-more="dup"><div class="lead">🔍</div><div class="body"><div class="t">Duplicate lot check</div><div class="s">Find a lot given twice in one stage</div></div><div class="end">›</div></div>
+    </div>
+    <div class="section-title">Data</div>
+    <div class="card">
+      <div class="lrow" data-more="export"><div class="lead">⬇️</div><div class="body"><div class="t">Backup / export</div><div class="s">Save all data to a file</div></div><div class="end">›</div></div>
+      <div class="lrow" data-more="import"><div class="lead">⬆️</div><div class="body"><div class="t">Restore / import</div><div class="s">Load data from a backup file</div></div><div class="end">›</div></div>
+      <div class="lrow" data-more="reset"><div class="lead" style="background:var(--bad-soft);color:var(--bad)">⚠️</div><div class="body"><div class="t">Reset everything</div><div class="s">Delete all data on this device</div></div><div class="end">›</div></div>
+    </div>
+    <div id="moreOut"></div>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </section>
+
+  <!-- ============ FIXED STAFF ============ -->
+  <section class="view" id="v-staff">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <button class="btn ghost sm" onclick="show('more')">‹ Back</button>
+      <div style="flex:1"></div>
+      <button class="btn dark sm" id="addStaffBtn">+ Staff</button>
+    </div>
+    <div class="card pad" style="margin-bottom:14px">
+      <div class="field" style="margin-bottom:0"><label>Salary month</label><input type="month" id="staffMonth"></div>
+    </div>
+    <div id="staffList"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<script>
+window.SEED_LOTS = [{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"479","pic":120,"code":"HM 878 BLACK-479-120"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"480","pic":104,"code":"HM 878 BLACK-480-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"481","pic":104,"code":"HM 878 BLACK-481-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"482","pic":112,"code":"HM 878 BLACK-482-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"483","pic":112,"code":"HM 878 BLACK-483-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"484","pic":112,"code":"HM 878 BLACK-484-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"485","pic":104,"code":"HM 878 BLACK-485-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"486","pic":112,"code":"HM 878 BLACK-486-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"487","pic":96,"code":"HM 878 BLACK-487-96"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"488","pic":112,"code":"HM 878 BLACK-488-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"489","pic":120,"code":"HM 878 BLACK-489-120"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"490","pic":120,"code":"HM 878 BLACK-490-120"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"491","pic":104,"code":"HM 878 BLACK-491-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"492","pic":112,"code":"HM 878 BLACK-492-112"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"493","pic":120,"code":"HM 878 BLACK-493-120"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3255","pic":104,"code":"HM 878 BLACK-3255-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3256","pic":120,"code":"HM 878 BLACK-3256-120"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3257","pic":104,"code":"HM 878 BLACK-3257-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3258","pic":104,"code":"HM 878 BLACK-3258-104"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3259","pic":102,"code":"HM 878 BLACK-3259-102"},{"billDate":"13/07/26","sort":"HM 878 BLACK","lot":"3260","pic":104,"code":"HM 878 BLACK-3260-104"},{"billDate":"2026-02-07 00:00:00","sort":"TR 556 DENIM BLUE OD","lot":"473","pic":96,"code":"TR 556 DENIM BLUE OD-473-96"}];
+</script>
+<script>
+/* ============================================================
+   STITCH हिसाब — Tuhi Collection factory ledger
+   Single file · localStorage · works offline (file://)
+   ============================================================ */
+
+const STAGES = ["CUTTING","KARIGAR","EMBROIDER","MUNDA","BOTTOM","BARTEG","PACKING"];
+const STAGE_LABEL = {CUTTING:"Cutting",KARIGAR:"Karigar",EMBROIDER:"Embroider",MUNDA:"Munda",BOTTOM:"Bottom",BARTEG:"Barteg",PACKING:"Packing"};
+const DEFAULT_RATES = {CUTTING:5,KARIGAR:30,EMBROIDER:12,MUNDA:8,BOTTOM:4,BARTEG:3,PACKING:2};
+const KEY = "tuhi_stitch_hisab_v1";
+
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ return migrate(JSON.parse(raw)); }
+  }catch(e){}
+  // first run — seed from the uploaded workbook
+  const lots = (window.SEED_LOTS||[]).map(l=>({...l}));
+  return { lots, entries:[], rates:{...DEFAULT_RATES}, seq:1, staff:[], salary:{}, workers:[] };
+}
+function migrate(d){
+  d.staff=d.staff||[]; d.salary=d.salary||{}; d.workers=d.workers||[];
+  d.rates=d.rates||{...DEFAULT_RATES}; d.seq=d.seq||1; d.entries=d.entries||[]; d.lots=d.lots||[];
+  const nid=()=> "w"+(d.seq++)+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  // ensure every entry links to a stage-specific worker record
+  d.entries.forEach(e=>{
+    if(e.workerId) return;
+    const nm=(e.person||"").trim(); if(!nm){ return; }
+    let w=d.workers.find(x=>x.name.toLowerCase()===nm.toLowerCase() && x.stage===e.stage);
+    if(!w){ w={id:nid(),name:nm,stage:e.stage}; d.workers.push(w); }
+    e.workerId=w.id;
+  });
+  return d;
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+/* ---------- helpers ---------- */
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const rup = n=>"₹"+Math.round(n||0).toLocaleString("en-IN");
+const rupSign = n=>{const v=Math.round(n||0); return (v<0?"−₹":"₹")+Math.abs(v).toLocaleString("en-IN");};
+const esc = s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid = ()=> "e"+(state.seq++)+"_"+Date.now().toString(36);
+const todayISO = ()=> new Date().toISOString().slice(0,10);
+
+function toast(msg,kind){
+  const t=$("#toast"); t.textContent=msg; t.className="show "+(kind||"");
+  clearTimeout(t._h); t._h=setTimeout(()=>t.className="",2200);
+}
+// date parsing: store ISO (yyyy-mm-dd). Display dd/mm/yy
+function fmtDate(iso){
+  if(!iso) return "";
+  const p = String(iso).slice(0,10).split("-");
+  if(p.length===3) return p[2]+"/"+p[1]+"/"+p[0].slice(2);
+  return iso;
+}
+function lotByCode(code){ return state.lots.find(l=>l.code===code); }
+function makeCode(sort,lot,pic){ return `${sort}-${lot}-${pic}`; }
+
+/* ---------- hisab math ----------
+   gross = pic * rate
+   given = amount paid now
+   line balance = gross - given  (positive => still owed to worker; negative => excess/advance)
+   type derived from the line
+*/
+function lineCalc(gross, given, hasCode){
+  const bal = gross - given;
+  let type;
+  if(!hasCode){ type = "ADVANCE"; }
+  else if(given===0){ type = "HISAB PENDING"; }
+  else if(Math.abs(bal)<0.5){ type = "FULL HISAB"; }
+  else if(bal>0){ type = "PARTIAL HISAB"; }
+  else { type = "HISAB + ADVANCE"; }
+  return {bal, type};
+}
+function typePill(type){
+  const m={"ADVANCE":"gold","HISAB PENDING":"warn","FULL HISAB":"good","PARTIAL HISAB":"info","HISAB + ADVANCE":"info","CARRY FORWARD":"gold"};
+  return `<span class="pill ${m[type]||'info'}">${type}</span>`;
+}
+
+/* per-person net position across ALL entries:
+   earned = sum(gross);  given = sum(amount given)
+   net due = earned - given  (>0 factory owes worker; <0 worker holds advance) */
+function workerById(id){ return state.workers.find(w=>w.id===id); }
+function workerName(id){ const w=workerById(id); return w?w.name:""; }
+function workersByStage(stage){ return state.workers.filter(w=>w.stage===stage).sort((a,b)=>a.name.localeCompare(b.name)); }
+function workerTotals(id){
+  let earned=0, given=0, jobs=0, pic=0;
+  state.entries.filter(e=>e.workerId===id).forEach(e=>{
+    earned += e.gross; given += e.given; pic += (e.pic||0); if(e.code) jobs++;
+  });
+  return {earned, given, due:earned-given, jobs, pic};
+}
+
+/* stages a lot has passed through */
+function lotStages(code){
+  const out={};
+  STAGES.forEach(st=>{
+    const e = state.entries.find(x=>x.code===code && x.stage===st);
+    if(e) out[st]=e;
+  });
+  return out;
+}
+</script>
+<script>
+/* ============ NAVIGATION ============ */
+function show(view){
+  $$(".view").forEach(v=>v.classList.remove("on"));
+  $("#v-"+view).classList.add("on");
+  $$("#tabs button").forEach(b=>b.classList.toggle("on", b.dataset.view===view));
+  window.scrollTo(0,0);
+  if(view==="home") renderHome();
+  if(view==="entry") renderEntry();
+  if(view==="lots") renderLots();
+  if(view==="people") renderPeople();
+  if(view==="staff") renderStaff();
+}
+$$("#tabs button").forEach(b=> b.onclick=()=>show(b.dataset.view));
+
+/* ============ HOME ============ */
+function renderHome(){
+  const totLots = state.lots.length;
+  const totPic = state.lots.reduce((s,l)=>s+ (l.pic||0),0);
+  // total making cost booked = sum of gross across coded entries
+  const bookedCost = state.entries.filter(e=>e.code).reduce((s,e)=>s+e.gross,0);
+  // total owed = sum of positive worker dues
+  let owed=0, advance=0;
+  state.workers.forEach(w=>{const d=workerTotals(w.id).due; if(d>0)owed+=d; else advance+=-d;});
+  $("#homeKpis").innerHTML = `
+    ${kpi("Total lots", totLots, "📦", false)}
+    ${kpi("Total pieces", totPic.toLocaleString("en-IN"), "🧵", false)}
+    ${kpi("Making cost booked", rup(bookedCost), "🧮", false)}
+    ${kpiAccent("To pay workers", rup(owed), advance>0? "Advance out: "+rup(advance):"")}
+  `;
+  $("#todayStr").textContent = fmtDate(todayISO());
+  const today = state.entries.filter(e=>e.date===todayISO());
+  $("#todayCard").innerHTML = today.length? today.map(entryRow).join("")
+    : `<div class="empty"><div class="big">🗓️</div>No work recorded today yet.<br><button class="btn primary sm" style="margin-top:12px" onclick="show('entry')">Record work</button></div>`;
+  // owed list
+  const people = state.workers.map(w=>({...w,...workerTotals(w.id)})).filter(x=>Math.abs(x.due)>0.5)
+     .sort((a,b)=>b.due-a.due);
+  $("#owedCard").innerHTML = people.length? people.map(p=>`
+    <div class="lrow" onclick="openWorkerLedger('${p.id}')">
+      <div class="lead">${esc(initials(p.name))}</div>
+      <div class="body"><div class="t">${esc(p.name)} <span class="pill info" style="font-size:9.5px">${STAGE_LABEL[p.stage]||p.stage}</span></div>
+        <div class="s">earned ${rup(p.earned)} · paid ${rup(p.given)} · ${p.jobs} lots</div></div>
+      <div class="end"><div class="amt" style="color:${p.due>=0?'var(--bad)':'var(--good)'}">${p.due>=0?rup(p.due):rup(-p.due)}</div>
+        <div class="s">${p.due>=0?'to pay':'advance'}</div></div>
+    </div>`).join("")
+    : `<div class="empty">All settled. Nothing pending.</div>`;
+}
+function kpi(lab,val,tag,soft){return `<div class="kpi"><div class="lab">${lab}</div><div class="val num">${val}</div><span class="tag">${tag}</span></div>`;}
+function kpiAccent(lab,val,note){return `<div class="kpi accent"><div class="lab">${lab}</div><div class="val num">${val}</div>${note?`<div class="lab" style="margin-top:6px;font-weight:600">${note}</div>`:""}</div>`;}
+function initials(n){const p=n.trim().split(/\s+/);return ((p[0]||"")[0]||"").toUpperCase()+((p[1]||"")[0]||"").toUpperCase();}
+
+function entryRow(e){
+  const stage = STAGE_LABEL[e.stage]||e.stage;
+  const sub = e.code? `${stage} · ${e.code}` : `${stage} · advance`;
+  return `<div class="lrow" onclick="editEntry('${e.id}')">
+    <div class="lead">${esc(initials(e.person))}</div>
+    <div class="body"><div class="t">${esc(e.person)}</div><div class="s">${esc(sub)}</div></div>
+    <div class="end"><div class="amt">${rup(e.given)}</div>${typePill(e.type)}</div>
+  </div>`;
+}
+
+/* ============ WORK ENTRY ============ */
+let entryStage = "CUTTING";
+let editingId = null;
+
+function renderEntry(){
+  // stage chips
+  $("#stageChips").innerHTML = STAGES.map(st=>`<button class="chip ${st===entryStage?'on':''}" data-st="${st}">${STAGE_LABEL[st]}</button>`).join("");
+  $$("#stageChips .chip").forEach(c=> c.onclick=()=>{ entryStage=c.dataset.st; renderEntry(); });
+  // code dropdown — hide codes already used in this stage (unless editing that one)
+  const used = new Set(state.entries.filter(e=>e.stage===entryStage && e.id!==editingId).map(e=>e.code).filter(Boolean));
+  const opts = state.lots.filter(l=>!used.has(l.code))
+    .map(l=>`<option value="${esc(l.code)}">${esc(l.code)}</option>`).join("");
+  $("#e_code").innerHTML = `<option value="">— No lot (advance only) —</option>`+opts;
+  // worker dropdown — only workers of this stage
+  $("#e_stageTag").textContent = "· "+STAGE_LABEL[entryStage];
+  const ws = workersByStage(entryStage);
+  const keep = $("#e_worker").value;
+  $("#e_worker").innerHTML = `<option value="">— choose ${STAGE_LABEL[entryStage]} worker —</option>`
+    + ws.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join("");
+  if(ws.some(w=>w.id===keep)) $("#e_worker").value=keep;
+  if(!$("#e_date").value) $("#e_date").value = todayISO();
+  if(!editingId) $("#e_rate").value = state.rates[entryStage]||"";
+  recalcEntry();
+  renderRateEditor();
+}
+function recalcEntry(){
+  const code = $("#e_code").value;
+  const lot = code? lotByCode(code):null;
+  const pic = lot? lot.pic : 0;
+  $("#e_pic").value = code? pic : "";
+  const rate = parseFloat($("#e_rate").value)||0;
+  const given = parseFloat($("#e_given").value)||0;
+  const gross = code? pic*rate : 0;
+  $("#e_gross").textContent = rup(gross);
+  const {bal,type} = lineCalc(gross, given, !!code);
+  $("#e_balLab").textContent = bal>=0? "STILL OWED TO WORKER":"EXCESS (ADVANCE)";
+  $("#e_bal").textContent = rup(Math.abs(bal));
+  $("#e_type").innerHTML = given||code? `Transaction type: ${typePill(type)}`:"";
+}
+["e_code","e_rate","e_given"].forEach(id=>{
+  document.addEventListener("input",ev=>{ if(ev.target.id===id) recalcEntry(); });
+});
+
+$("#e_addWorker").onclick = ()=> openAddWorker(entryStage, (id)=>{ renderEntry(); $("#e_worker").value=id; });
+
+$("#e_save").onclick = ()=>{
+  const workerId = $("#e_worker").value;
+  const date = $("#e_date").value;
+  const code = $("#e_code").value;
+  const rate = parseFloat($("#e_rate").value)||0;
+  const given = parseFloat($("#e_given").value)||0;
+  if(!workerId) return toast("Choose a worker","err");
+  if(!date) return toast("Pick a date","err");
+  if(!code && given<=0) return toast("Advance needs an amount","err");
+  if(code && rate<=0) return toast("Enter a rate for this lot","err");
+  // duplicate rule: same stage + same code only once
+  if(code){
+    const clash = state.entries.find(e=>e.stage===entryStage && e.code===code && e.id!==editingId);
+    if(clash) return toast(`This lot is already in ${STAGE_LABEL[entryStage]} (${clash.person})`,"err");
+  }
+  const lot = code? lotByCode(code):null;
+  const pic = lot? lot.pic:0;
+  const gross = code? pic*rate:0;
+  const {type} = lineCalc(gross, given, !!code);
+  const person = workerName(workerId);
+  const rec = {id: editingId||uid(), stage:entryStage, date, workerId, person, code, lot: lot?lot.lot:"", pic, rate: code?rate:0, gross, given, type};
+  if(editingId){
+    const i = state.entries.findIndex(e=>e.id===editingId);
+    state.entries[i]=rec; editingId=null;
+    $("#e_save").textContent="Save entry";
+    if($("#e_del")) $("#e_del").remove();
+  }else{
+    state.entries.push(rec);
+  }
+  save();
+  toast("Saved · "+type,"ok");
+  // reset for next quick entry, keep stage + date
+  $("#e_worker").value=""; $("#e_code").value=""; $("#e_given").value="";
+  $("#e_rate").value = state.rates[entryStage]||"";
+  renderEntry();
+};
+
+function renderRateEditor(){
+  $("#rateEditor").innerHTML = `<div class="grid2">`+STAGES.map(st=>`
+    <div class="field" style="margin-bottom:8px">
+      <label>${STAGE_LABEL[st]}</label>
+      <input type="number" inputmode="decimal" value="${state.rates[st]||""}" data-rate="${st}">
+    </div>`).join("")+`</div><div class="field hint">Used to auto-fill the rate. You can still change it per entry.</div>`;
+  $$("#rateEditor input").forEach(inp=> inp.onchange=()=>{
+    state.rates[inp.dataset.rate]=parseFloat(inp.value)||0; save(); toast("Rate saved","ok");
+  });
+}
+
+function editEntry(id){
+  const e = state.entries.find(x=>x.id===id); if(!e) return;
+  editingId=id; entryStage=e.stage; show("entry");
+  setTimeout(()=>{
+    $("#e_date").value=e.date; $("#e_worker").value=e.workerId||"";
+    $("#e_code").value=e.code||""; $("#e_rate").value=e.rate||""; $("#e_given").value=e.given||"";
+    recalcEntry();
+    $("#e_save").textContent="Update entry";
+    // add delete option
+    if(!$("#e_del")){
+      const d=document.createElement("button"); d.id="e_del"; d.className="btn ghost block"; d.style.marginTop="8px";
+      d.style.color="var(--bad)"; d.textContent="Delete this entry";
+      d.onclick=()=>{ askPassword("delete this entry", ()=>{ if(confirm("Delete this entry?")){ state.entries=state.entries.filter(x=>x.id!==id); save(); editingId=null; toast("Deleted"); show("home"); } }); };
+      $("#e_save").after(d);
+    }
+    window.scrollTo(0,0);
+  },30);
+}
+</script>
+<script>
+/* ============ LOTS ============ */
+function renderLots(q){
+  q = (q||$("#lotSearch").value||"").toLowerCase().trim();
+  // group by sort
+  const groups={};
+  state.lots.forEach(l=>{
+    if(q && !(l.code.toLowerCase().includes(q)||l.sort.toLowerCase().includes(q)||String(l.lot).includes(q))) return;
+    (groups[l.sort]=groups[l.sort]||[]).push(l);
+  });
+  const keys=Object.keys(groups);
+  if(!keys.length){ $("#lotList").innerHTML=`<div class="empty"><div class="big">📦</div>No lots found.</div>`; return; }
+  $("#lotList").innerHTML = keys.map(sort=>{
+    const ls=groups[sort];
+    const pic=ls.reduce((s,l)=>s+l.pic,0);
+    return `<div class="section-title" style="margin-top:16px">${esc(sort)} · ${ls.length} lots · ${pic} pic</div>
+    <div class="card">`+ls.map(l=>{
+      const stages=lotStages(l.code); const done=Object.keys(stages).length;
+      return `<div class="lrow" onclick="openLot('${esc(l.code)}')">
+        <div class="lead">${esc(l.lot)}</div>
+        <div class="body"><div class="t">Lot ${esc(l.lot)} · ${l.pic} pic</div>
+          <div class="s">${done}/7 stages done${done?" · "+Object.keys(stages).map(s=>STAGE_LABEL[s][0]).join(""):""}</div></div>
+        <div class="end"><div class="s">${esc(l.billDate?fmtDateRaw(l.billDate):"")}</div>
+          <span class="pill ${done===7?'good':done?'info':'warn'}">${done===7?'complete':done?'in work':'new'}</span></div>
+      </div>`;}).join("")+`</div>`;
+  }).join("");
+}
+function fmtDateRaw(d){ return String(d); } // bill dates already dd/mm/yy in seed
+$("#lotSearch").oninput = ()=>renderLots();
+$("#addLotBtn").onclick = openAddLot;
+
+function openAddLot(){
+  modal(`<h3>Add lots</h3><div class="s" style="color:var(--muted);margin-bottom:12px">Enter the sort &amp; bill date once, then add all its lots below.</div>
+    <div class="field"><label>Sort number</label><input id="al_sort" list="sortList" placeholder="e.g. HM 878 BLACK"></div>
+    <datalist id="sortList">${[...new Set(state.lots.map(l=>l.sort))].map(s=>`<option value="${esc(s)}">`).join("")}</datalist>
+    <div class="field"><label>Bill date</label><input id="al_date" type="date" value="${todayISO()}"></div>
+    <div class="section-title" style="margin:8px 4px 8px">Lots in this sort</div>
+    <div id="al_rows"></div>
+    <button class="btn ghost sm" id="al_add" type="button" style="margin-top:4px">+ Add another lot</button>
+    <div class="readout" style="margin-top:14px"><span class="k">TO BE ADDED</span><span class="v num" id="al_count">0 lots</span></div>
+    <button class="btn primary block" id="al_save">Save all lots</button>`);
+  const rowsBox=$("#al_rows");
+  const addRow=(lot="",pic="")=>{
+    const div=document.createElement("div");
+    div.className="al-row"; div.style.cssText="display:flex;gap:8px;align-items:center;margin-bottom:8px";
+    div.innerHTML=`<input class="al-lot" inputmode="numeric" placeholder="Lot no" value="${lot}" style="flex:1;padding:11px;border:1.5px solid var(--line);border-radius:10px">
+      <input class="al-pic" inputmode="numeric" placeholder="Pieces" value="${pic}" style="flex:1;padding:11px;border:1.5px solid var(--line);border-radius:10px">
+      <button class="xbtn al-del" type="button" style="width:38px;height:38px">✕</button>`;
+    rowsBox.appendChild(div);
+    div.querySelector(".al-del").onclick=()=>{ div.remove(); updCount(); };
+    div.querySelectorAll("input").forEach(i=>i.oninput=updCount);
+    updCount();
+  };
+  const updCount=()=>{
+    let n=0; $$(".al-row").forEach(r=>{ if(r.querySelector(".al-lot").value.trim() && r.querySelector(".al-pic").value.trim()) n++; });
+    $("#al_count").textContent=n+(n===1?" lot":" lots");
+  };
+  $("#al_add").onclick=()=>addRow();
+  addRow(); addRow(); // start with two blank rows
+  $("#al_save").onclick=()=>{
+    const sort=$("#al_sort").value.trim(), bd=$("#al_date").value;
+    if(!sort) return toast("Enter the sort number","err");
+    const toAdd=[]; const seen=new Set();
+    for(const r of $$(".al-row")){
+      const lot=r.querySelector(".al-lot").value.trim(), pic=parseInt(r.querySelector(".al-pic").value)||0;
+      if(!lot && !pic) continue;
+      if(!lot||!pic) return toast("Each lot needs a number and pieces","err");
+      if(seen.has(lot)) return toast("Lot "+lot+" is repeated","err");
+      if(state.lots.some(x=>x.lot==lot && x.sort===sort)) return toast("Lot "+lot+" already exists in this sort","err");
+      seen.add(lot);
+      toAdd.push({billDate: fmtDate(bd), sort, lot, pic, code: makeCode(sort,lot,pic)});
+    }
+    if(!toAdd.length) return toast("Add at least one lot","err");
+    state.lots.push(...toAdd);
+    save(); closeModal(); toast(toAdd.length+" lot"+(toAdd.length>1?"s":"")+" added","ok"); renderLots();
+  };
+}
+
+/* ============ LOT DETAIL (kundli) ============ */
+function openLot(code){
+  const l=lotByCode(code); if(!l) return;
+  const stages=lotStages(code);
+  let costPP=0, rows="";
+  STAGES.forEach(st=>{
+    const e=stages[st];
+    if(e){ costPP+=e.rate;
+      rows+=`<tr><td>${STAGE_LABEL[st]}</td><td>${esc(e.person)}</td><td>${fmtDate(e.date)}</td><td class="r num">₹${e.rate}</td><td class="r num">${rup(e.gross)}</td></tr>`;
+    }else{
+      rows+=`<tr style="opacity:.5"><td>${STAGE_LABEL[st]}</td><td colspan="2">— not done —</td><td class="r">—</td><td class="r">—</td></tr>`;
+    }
+  });
+  const lotCost=costPP*l.pic;
+  const doneCount=Object.keys(stages).length;
+  modal(`<h3>Lot ${esc(l.lot)}</h3>
+    <div style="color:var(--muted);font-size:12.5px;margin-bottom:12px">${esc(code)}</div>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      ${miniKpi("Sort",l.sort)}${miniKpi("Pieces",l.pic)}${miniKpi("Bill date",l.billDate||"—")}
+    </div>
+    <div class="section-title" style="margin:18px 4px 8px">Stage history · ${doneCount}/7</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Work</th><th>Given to</th><th>Date</th><th class="r">Rate</th><th class="r">Hisab</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div class="readout" style="margin-top:14px"><span class="k">MAKING COST / PIECE</span><span class="v num">${rup(costPP)}</span></div>
+    <div class="readout" style="background:var(--gold);color:var(--denim-900)"><span class="k" style="color:var(--denim-800)">TOTAL MAKING COST OF LOT</span><span class="v num">${rup(lotCost)}</span></div>
+    <div class="field hint" style="margin-top:8px">${l.pic} pcs × ${rup(costPP)}/pc. Missing stages will raise this once recorded.</div>
+    <button class="btn ghost block" style="margin-top:14px" onclick="editLot('${esc(code)}')">✏️ Edit lot details</button>`);
+}
+
+/* ---- Edit an existing lot; cascade code change to all linked work entries ---- */
+function editLot(code){
+  const l=lotByCode(code); if(!l) return;
+  const linked = state.entries.filter(e=>e.code===code).length;
+  modal(`<h3>Edit lot</h3>
+    <div class="s" style="color:var(--muted);margin-bottom:12px">${linked? `${linked} work ${linked===1?'entry is':'entries are'} linked to this lot — they'll be updated automatically.`:"No work recorded on this lot yet."}</div>
+    <div class="field"><label>Sort number</label><input id="el_sort" list="sortList" value="${esc(l.sort)}"></div>
+    <datalist id="sortList">${[...new Set(state.lots.map(x=>x.sort))].map(s=>`<option value="${esc(s)}">`).join("")}</datalist>
+    <div class="grid2">
+      <div class="field"><label>Lot number</label><input id="el_lot" value="${esc(l.lot)}"></div>
+      <div class="field"><label>PIC (pieces)</label><input id="el_pic" inputmode="numeric" value="${l.pic}"></div>
+    </div>
+    <div class="field"><label>Bill date</label><input id="el_date" value="${esc(l.billDate||"")}" placeholder="dd/mm/yy"></div>
+    <div class="readout"><span class="k">NEW UNIQUE CODE</span><span class="v" id="el_code" style="font-size:14px">${esc(code)}</span></div>
+    <button class="btn primary block" id="el_save">Save changes</button>
+    <button class="btn ghost block" id="el_del" style="margin-top:8px;color:var(--bad)">Delete this lot</button>`);
+  const upd=()=>{const s=$("#el_sort").value.trim(),lo=$("#el_lot").value.trim(),p=$("#el_pic").value.trim();
+    $("#el_code").textContent=(s&&lo&&p)? makeCode(s,lo,p):"—";};
+  ["el_sort","el_lot","el_pic"].forEach(id=>$("#"+id).oninput=upd);
+  $("#el_save").onclick=()=>{
+    const sort=$("#el_sort").value.trim(), lot=$("#el_lot").value.trim(), pic=parseInt($("#el_pic").value)||0, bd=$("#el_date").value.trim();
+    if(!sort||!lot||!pic) return toast("Fill sort, lot and pic","err");
+    const newCode=makeCode(sort,lot,pic);
+    if(newCode!==code && lotByCode(newCode)) return toast("Another lot already has this exact code","err");
+    if((sort!==l.sort||lot!=l.lot) && state.lots.some(x=>x.code!==code && x.sort===sort && x.lot==lot))
+      return toast("Lot number already used in this sort","err");
+    // update the lot
+    l.sort=sort; l.lot=lot; l.pic=pic; l.billDate=bd; l.code=newCode;
+    // cascade to linked entries: new code, pic, and recompute gross + type
+    state.entries.filter(e=>e.code===code).forEach(e=>{
+      e.code=newCode; e.lot=lot; e.pic=pic; e.gross=pic*e.rate;
+      e.type=lineCalc(e.gross, e.given, true).type;
+    });
+    save(); closeModal(); toast("Lot updated","ok"); renderLots(); renderHome();
+  };
+  $("#el_del").onclick=()=>{
+    const msg = linked? `Delete this lot AND its ${linked} work ${linked===1?'entry':'entries'}?` : "Delete this lot?";
+    askPassword("delete this lot", ()=>{
+      if(!confirm(msg)) return;
+      state.lots=state.lots.filter(x=>x.code!==code);
+      state.entries=state.entries.filter(e=>e.code!==code);
+      save(); closeModal(); toast("Lot deleted"); renderLots(); renderHome();
+    });
+  };
+}
+function miniKpi(l,v){return `<div class="kpi" style="padding:11px"><div class="lab">${l}</div><div class="val num" style="font-size:16px;margin-top:3px">${esc(v)}</div></div>`;}
+
+/* ============ WORKERS DASHBOARD ============ */
+const W_SORTS = [
+  {k:"pic",   lab:"Pieces done", fn:t=>t.pic,      show:t=>t.pic+" pc"},
+  {k:"earned",lab:"Earned",      fn:t=>t.earned,   show:t=>rup(t.earned)},
+  {k:"due",   lab:"To pay",      fn:t=>t.due,      show:t=>rup(Math.max(0,t.due))},
+  {k:"adv",   lab:"Advance held",fn:t=>-t.due,     show:t=>rup(Math.max(0,-t.due))},
+  {k:"jobs",  lab:"Lots",        fn:t=>t.jobs,     show:t=>t.jobs+" lots"},
+];
+let workerSort = "pic";
+
+function renderPeople(){
+  $("#wSortChips").innerHTML = W_SORTS.map(s=>`<button class="chip ${s.k===workerSort?'on':''}" data-ws="${s.k}">${s.lab}</button>`).join("");
+  $$("#wSortChips .chip").forEach(c=> c.onclick=()=>{ workerSort=c.dataset.ws; renderPeople(); });
+  const metric = W_SORTS.find(s=>s.k===workerSort);
+  let list = state.workers.map(w=>({...w, t:workerTotals(w.id)}));
+  list.sort((a,b)=> metric.fn(b.t)-metric.fn(a.t) || a.name.localeCompare(b.name));
+  const board=$("#workerBoard");
+  if(!list.length){ board.innerHTML=`<div class="empty"><div class="big">👤</div>No workers yet.<br><button class="btn primary sm" style="margin-top:12px" onclick="openAddWorker()">Add worker</button></div>`; return; }
+  board.innerHTML=`<div class="card">`+list.map((w,i)=>{
+    const val=metric.show(w.t);
+    const dueColor = w.t.due>=0?'var(--bad)':'var(--good)';
+    return `<div class="lrow" onclick="openWorkerLedger('${w.id}')">
+      <div class="lead" style="${i<3?'background:var(--gold-soft);color:var(--gold-dark)':''}">${i+1}</div>
+      <div class="body"><div class="t">${esc(w.name)} <span class="pill info" style="font-size:9.5px">${STAGE_LABEL[w.stage]||w.stage}</span></div>
+        <div class="s">${w.t.pic} pc · ${w.t.jobs} lots · net ${w.t.due>=0?'to pay ':'adv '}<span style="color:${dueColor};font-weight:600">${rup(Math.abs(w.t.due))}</span></div></div>
+      <div class="end"><div class="amt">${val}</div><div class="s">${metric.lab}</div></div>
+    </div>`;}).join("")+`</div>`;
+}
+$("#addWorkerBtn").onclick=()=>openAddWorker();
+
+function openAddWorker(presetStage, cb){
+  modal(`<h3>Add worker</h3>
+    <div class="s" style="color:var(--muted);margin-bottom:12px">Each worker belongs to one type of work. The same name in two stages = two separate workers.</div>
+    <div class="field"><label>Name</label><input id="aw_name" placeholder="e.g. Gaurav"></div>
+    <div class="field"><label>Work type</label>
+      <select id="aw_stage">${STAGES.map(st=>`<option value="${st}" ${st===(presetStage||entryStage)?'selected':''}>${STAGE_LABEL[st]}</option>`).join("")}</select></div>
+    <button class="btn primary block" id="aw_save">Add worker</button>`);
+  $("#aw_save").onclick=()=>{
+    const name=$("#aw_name").value.trim(), stage=$("#aw_stage").value;
+    if(!name) return toast("Enter a name","err");
+    if(state.workers.some(w=>w.name.toLowerCase()===name.toLowerCase() && w.stage===stage))
+      return toast("This worker already exists in "+STAGE_LABEL[stage],"err");
+    const w={id:uid(),name,stage}; state.workers.push(w); save();
+    closeModal(); toast("Worker added","ok");
+    if(cb) cb(w.id); else renderPeople();
+  };
+}
+
+/* ---- worker ledger (modal) ---- */
+let _ledgerWorker=null;
+function openWorkerLedger(id){
+  const w=workerById(id); if(!w) return; _ledgerWorker=id;
+  const d=new Date(); d.setMonth(d.getMonth()-1); const from=d.toISOString().slice(0,10);
+  modal(`<h3>${esc(w.name)}</h3>
+    <div style="margin-bottom:12px"><span class="pill info">${STAGE_LABEL[w.stage]||w.stage}</span></div>
+    <div class="grid2">
+      <div class="field"><label>From</label><input type="date" id="lg_from" value="${from}"></div>
+      <div class="field"><label>To</label><input type="date" id="lg_to" value="${todayISO()}"></div>
+    </div>
+    <button class="btn dark block" onclick="fillLedger()">Show ledger</button>
+    <div id="ledgerBody"></div>
+    <button class="btn ghost block" style="margin-top:10px;color:var(--bad)" onclick="delWorker('${id}')">Delete worker</button>`);
+  fillLedger();
+}
+function fillLedger(){
+  const id=_ledgerWorker; const w=workerById(id); if(!w) return;
+  const from=$("#lg_from").value, to=$("#lg_to").value;
+  let rows=state.entries.filter(e=>e.workerId===id);
+  if(from) rows=rows.filter(e=>e.date>=from);
+  if(to) rows=rows.filter(e=>e.date<=to);
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  const tot=workerTotals(id);
+  let run=0,body="",sPic=0,sGross=0,sGiven=0;
+  rows.forEach(e=>{ run+=e.gross-e.given; sPic+=e.pic; sGross+=e.gross; sGiven+=e.given;
+    body+=`<tr onclick="closeModal();editEntry('${e.id}')"><td>${fmtDate(e.date)}</td>
+      <td>${e.code?esc(e.code):'<span style="color:var(--muted)">advance</span>'}</td>
+      <td class="r num">${e.pic||"—"}</td><td class="r num">${e.rate?"₹"+e.rate:"—"}</td>
+      <td class="r num">${rup(e.gross)}</td><td class="r num">${rup(e.given)}</td>
+      <td class="r num" style="font-weight:700;color:${run>=0?'var(--bad)':'var(--good)'}">${rupSign(run)}</td></tr>`;
+  });
+  const dueTxt = tot.due>=0? `Factory owes` : `Holds advance`;
+  $("#ledgerBody").innerHTML = rows.length? `
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-top:6px">
+      ${miniKpi("Earned",rup(sGross))}${miniKpi("Paid",rup(sGiven))}${miniKpi("Pieces",sPic)}
+    </div>
+    <div class="tbl-wrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Lot</th><th class="r">Pic</th><th class="r">Rate</th><th class="r">Gross</th><th class="r">Given</th><th class="r">Bal</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr class="tfoot"><td colspan="2">TOTAL</td><td class="r num">${sPic}</td><td></td><td class="r num">${rup(sGross)}</td><td class="r num">${rup(sGiven)}</td><td class="r num">${rupSign(sGross-sGiven)}</td></tr></tfoot>
+    </table></div>
+    <div class="readout" style="margin-top:12px;background:${tot.due>=0?'var(--denim-700)':'var(--good)'}">
+      <span class="k">${dueTxt} (all-time)</span><span class="v num">${rup(Math.abs(tot.due))}</span></div>
+    <button class="btn ghost block" style="margin-top:10px" onclick="printLedger('${id}','${from}','${to}')">🖨️ Print / save PDF</button>
+  ` : `<div class="empty" style="margin-top:14px"><div class="big">📄</div>No transactions in this range.</div>`;
+}
+function delWorker(id){
+  const n=state.entries.filter(e=>e.workerId===id).length;
+  askPassword("delete this worker", ()=>{
+    if(!confirm(n? `Delete this worker AND their ${n} entries?`:"Delete this worker?")) return;
+    state.workers=state.workers.filter(w=>w.id!==id);
+    state.entries=state.entries.filter(e=>e.workerId!==id);
+    save(); closeModal(); toast("Worker deleted"); renderPeople(); renderHome();
+  });
+}
+</script>
+<script>
+/* ============ MODAL ============ */
+function modal(html){ $("#modal").innerHTML=`<div class="mh"><div style="flex:1">${''}</div><button class="xbtn" onclick="closeModal()">×</button></div>`+`<div id="mbody">${html}</div>`;
+  // move close button to overlay content start
+  $("#modal").innerHTML=`<button class="xbtn" style="position:absolute;right:18px;top:18px" onclick="closeModal()">×</button>`+html;
+  $("#modal").style.position="relative";
+  $("#modalBg").classList.add("show");
+}
+function closeModal(){ $("#modalBg").classList.remove("show"); }
+$("#modalBg").onclick=e=>{ if(e.target===$("#modalBg")) closeModal(); };
+
+/* ============ PASSWORD LOCK ============ */
+const APP_PASS = "tuhi1274";
+function askPassword(actionLabel, cb){
+  modal(`<h3>🔒 Protected action</h3>
+    <div class="s" style="color:var(--muted);margin-bottom:14px">Enter the password to ${actionLabel}.</div>
+    <div class="field"><input type="password" id="pw_in" placeholder="Password" autocomplete="off" inputmode="text"></div>
+    <button class="btn primary block" id="pw_ok">Unlock</button>`);
+  const go=()=>{ if($("#pw_in").value===APP_PASS){ closeModal(); cb(); }
+    else { toast("Wrong password","err"); $("#pw_in").value=""; $("#pw_in").focus(); } };
+  $("#pw_ok").onclick=go;
+  $("#pw_in").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } });
+  setTimeout(()=>$("#pw_in").focus(),60);
+}
+
+/* ============ MORE TOOLS ============ */
+$$("[data-more]").forEach(r=> r.onclick=()=>moreAction(r.dataset.more));
+function moreAction(what){
+  if(what==="staff") return show("staff");
+  if(what==="date") return dayBook();
+  if(what==="cost") return costOverview();
+  if(what==="rates") return rateReport();
+  if(what==="dup") return dupCheck();
+  if(what==="export") return exportData();
+  if(what==="import") return askPassword("restore data (this replaces everything)", ()=>$("#importFile").click());
+  if(what==="reset") return resetAll();
+}
+
+function dayBook(){
+  modal(`<h3>Day book</h3>
+    <div class="field" style="margin-top:10px"><label>Pick a date</label><input type="date" id="db_date" value="${todayISO()}"></div>
+    <div id="db_out"></div>`);
+  const draw=()=>{
+    const d=$("#db_date").value;
+    const rows=state.entries.filter(e=>e.date===d).sort((a,b)=>STAGES.indexOf(a.stage)-STAGES.indexOf(b.stage));
+    if(!rows.length){ $("#db_out").innerHTML=`<div class="empty"><div class="big">🗓️</div>Nothing on ${fmtDate(d)}.</div>`; return; }
+    let gp=0,gg=0,pic=0;
+    const body=rows.map(e=>{gp+=e.gross;gg+=e.given;pic+=e.pic;
+      return `<tr onclick="closeModal();editEntry('${e.id}')"><td>${STAGE_LABEL[e.stage]}</td><td>${esc(e.person)}</td>
+        <td>${e.code?esc(e.code):'advance'}</td><td class="r num">${rup(e.gross)}</td><td class="r num">${rup(e.given)}</td><td>${typePill(e.type)}</td></tr>`;}).join("");
+    $("#db_out").innerHTML=`<div class="card tbl-wrap" style="margin-top:6px"><table><thead><tr><th>Work</th><th>Name</th><th>Lot</th><th class="r">Gross</th><th class="r">Given</th><th>Type</th></tr></thead>
+      <tbody>${body}</tbody><tfoot><tr class="tfoot"><td colspan="3">TOTAL · ${pic} pic</td><td class="r num">${rup(gp)}</td><td class="r num">${rup(gg)}</td><td></td></tr></tfoot></table></div>`;
+  };
+  $("#db_date").onchange=draw; draw();
+}
+
+function costOverview(){
+  const rows=state.lots.map(l=>{
+    const stages=lotStages(l.code); const cpp=Object.values(stages).reduce((s,e)=>s+e.rate,0);
+    return {l, cpp, total:cpp*l.pic, done:Object.keys(stages).length};
+  }).filter(r=>r.done>0).sort((a,b)=>b.total-a.total);
+  const grand=rows.reduce((s,r)=>s+r.total,0);
+  modal(`<h3>Making cost per lot</h3>
+    <div class="readout" style="margin:12px 0"><span class="k">TOTAL COST BOOKED</span><span class="v num">${rup(grand)}</span></div>
+    ${rows.length? `<div class="card tbl-wrap"><table><thead><tr><th>Lot</th><th class="r">Pic</th><th class="r">₹/pc</th><th class="r">Total</th><th class="r">Stages</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr onclick="closeModal();openLot('${esc(r.l.code)}')"><td>${esc(r.l.sort)} · ${esc(r.l.lot)}</td>
+        <td class="r num">${r.l.pic}</td><td class="r num">${rup(r.cpp)}</td><td class="r num">${rup(r.total)}</td><td class="r">${r.done}/7</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="empty">No work recorded yet.</div>`}`);
+}
+
+/* ---- Monthly rate report: avg rate / pieces / hisab per stage ---- */
+let rateMonth = todayISO().slice(0,7);
+function rateReport(){
+  modal(`<h3>Monthly rate report</h3>
+    <div class="field" style="margin-top:10px"><label>Month</label><input type="month" id="rr_month" value="${rateMonth}"></div>
+    <div id="rr_out"></div>`);
+  const draw=()=>{
+    rateMonth=$("#rr_month").value||rateMonth;
+    const rows=state.entries.filter(e=>e.code && (e.date||"").slice(0,7)===rateMonth);
+    let out="", anyRate=false;
+    let tPic=0,tHisab=0;
+    const body=STAGES.map(st=>{
+      const es=rows.filter(e=>e.stage===st);
+      const pic=es.reduce((s,e)=>s+e.pic,0);
+      const hisab=es.reduce((s,e)=>s+e.gross,0);
+      const avg= pic? hisab/pic : 0;   // weighted avg rate = total hisab / total pieces
+      tPic+=pic; tHisab+=hisab; if(pic) anyRate=true;
+      return `<tr style="${pic?'':'opacity:.45'}"><td>${STAGE_LABEL[st]}</td>
+        <td class="r num">${es.length}</td><td class="r num">${pic||"—"}</td>
+        <td class="r num" style="font-weight:700;color:var(--denim-600)">${pic?"₹"+avg.toFixed(2):"—"}</td>
+        <td class="r num">${pic?rup(hisab):"—"}</td></tr>`;
+    }).join("");
+    const avgAll = tPic? tHisab/tPic : 0;
+    const monLabel=new Date(rateMonth+"-01").toLocaleString("en-IN",{month:"long",year:"numeric"});
+    $("#rr_out").innerHTML = anyRate? `
+      <div class="s" style="color:var(--muted);margin:2px 0 10px">${monLabel} · rate = total हिसाब ÷ total pieces (this month's effective rate)</div>
+      <div class="card tbl-wrap"><table><thead><tr><th>Stage</th><th class="r">Lots</th><th class="r">Pieces</th><th class="r">Avg rate</th><th class="r">Hisab</th></tr></thead>
+        <tbody>${body}</tbody>
+        <tfoot><tr class="tfoot"><td>ALL STAGES</td><td class="r num">${rows.length}</td><td class="r num">${tPic}</td><td class="r num">₹${avgAll.toFixed(2)}</td><td class="r num">${rup(tHisab)}</td></tr></tfoot>
+      </table></div>
+      <div class="readout" style="margin-top:12px"><span class="k">TOTAL MAKING हिसाब · ${monLabel}</span><span class="v num">${rup(tHisab)}</span></div>
+    ` : `<div class="empty"><div class="big">📊</div>No work recorded in ${monLabel}.</div>`;
+  };
+  $("#rr_month").onchange=draw; draw();
+}
+
+function dupCheck(){
+  const seen={}, dups=[];
+  state.entries.filter(e=>e.code).forEach(e=>{
+    const k=e.stage+"|"+e.code;
+    if(seen[k]) dups.push({stage:e.stage,code:e.code,a:seen[k],b:e.person});
+    else seen[k]=e.person;
+  });
+  modal(`<h3>Duplicate lot check</h3>
+    <div class="s" style="color:var(--muted);margin:8px 0 14px">A lot may pass through every stage once. The same lot appearing twice in one stage is flagged.</div>
+    ${dups.length? `<div class="card">`+dups.map(d=>`<div class="lrow"><div class="lead" style="background:var(--bad-soft);color:var(--bad)">!</div>
+      <div class="body"><div class="t">${esc(d.code)}</div><div class="s">${STAGE_LABEL[d.stage]} — ${esc(d.a)} & ${esc(d.b)}</div></div></div>`).join("")+`</div>`
+      : `<div class="empty"><div class="big">✅</div>No duplicate lot assignments found.</div>`}`);
+}
+
+/* ============ DATA ============ */
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="tuhi-hisab-backup-"+todayISO()+".json"; a.click();
+  toast("Backup downloaded","ok");
+}
+$("#importFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result);
+    if(!d.lots||!d.entries) throw 0;
+    if(confirm("Replace all current data with this backup?")){ state=d; state.rates=state.rates||{...DEFAULT_RATES}; state.seq=state.seq||1; save(); toast("Data restored","ok"); show("home"); }
+  }catch(err){ toast("That file is not a valid backup","err"); } };
+  r.readAsText(f); e.target.value="";
+};
+function resetAll(){
+  askPassword("reset everything", ()=>{
+    if(!confirm("Delete ALL lots, workers, staff and entries on this device? This cannot be undone.")) return;
+    localStorage.removeItem(KEY); state=load(); toast("Everything reset"); show("home");
+  });
+}
+
+/* ============ PRINT LEDGER ============ */
+function printLedger(id,from,to){
+  const w=workerById(id); const name=w?w.name:""; const stg=w?(STAGE_LABEL[w.stage]||w.stage):"";
+  let rows=state.entries.filter(e=>e.workerId===id);
+  if(from) rows=rows.filter(e=>e.date>=from); if(to) rows=rows.filter(e=>e.date<=to);
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  let run=0,gG=0,gv=0;
+  const body=rows.map(e=>{run+=e.gross-e.given;gG+=e.gross;gv+=e.given;
+    return `<tr><td>${fmtDate(e.date)}</td><td>${e.code||"advance"}</td><td style="text-align:right">${e.pic||""}</td><td style="text-align:right">${e.rate?"₹"+e.rate:""}</td><td style="text-align:right">${rup(e.gross)}</td><td style="text-align:right">${rup(e.given)}</td><td style="text-align:right">${rupSign(run)}</td></tr>`;}).join("");
+  const win=window.open("","_blank");
+  win.document.write(`<html><head><title>Ledger — ${esc(name)}</title>
+    <style>body{font-family:Arial;padding:24px;color:#171f30}h2{margin:0}table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+    th,td{border:1px solid #ccc;padding:6px 8px}th{background:#26385f;color:#fff;text-align:left}
+    .tot td{font-weight:bold;background:#eef}.hd{color:#666;font-size:13px;margin-top:4px}</style></head><body>
+    <h2>TUHI COLLECTION — Worker Ledger</h2>
+    <div class="hd">${esc(name)} (${stg}) · ${fmtDate(from)} to ${fmtDate(to)}</div>
+    <table><thead><tr><th>Date</th><th>Lot</th><th>Pic</th><th>Rate</th><th>Gross</th><th>Given</th><th>Balance</th></tr></thead>
+    <tbody>${body}</tbody><tr class="tot"><td colspan="4">TOTAL</td><td style="text-align:right">${rup(gG)}</td><td style="text-align:right">${rup(gv)}</td><td style="text-align:right">${rupSign(gG-gv)}</td></tr></table>
+    <p style="margin-top:16px">Net position: <b>${rupSign(gG-gv)}</b> ${gG-gv>=0?"(to pay worker)":"(advance with worker)"}</p>
+    </body></html>`);
+  win.document.close(); setTimeout(()=>win.print(),300);
+}
+
+/* ============ FIXED STAFF (monthly salary) ============ */
+const PAID_LEAVES_DEFAULT = 4;
+let staffMonth = todayISO().slice(0,7); // yyyy-mm
+
+function daysInMonth(y,m0){ return new Date(y,m0+1,0).getDate(); }
+function lastMondayISO(key){
+  const [y,m]=key.split("-").map(Number); const m0=m-1;
+  const last=new Date(y,m0,daysInMonth(y,m0));
+  // step back to Monday (getDay: 0=Sun..1=Mon)
+  while(last.getDay()!==1) last.setDate(last.getDate()-1);
+  return last.toISOString().slice(0,10);
+}
+function salaryKey(staffId,key){ return staffId+"|"+key; }
+function getSalRec(staffId,key){
+  const k=salaryKey(staffId,key);
+  if(!state.salary[k]) state.salary[k]={absent:0,paidLeaves:PAID_LEAVES_DEFAULT,hisabDate:"",advances:[],settled:false};
+  const r=state.salary[k];
+  r.advances=r.advances||[]; if(r.paidLeaves==null)r.paidLeaves=PAID_LEAVES_DEFAULT;
+  return r;
+}
+function salaryCalc(staff,key){
+  const rec=getSalRec(staff.id,key);
+  const [y,m]=key.split("-").map(Number); const m0=m-1;
+  const dim=daysInMonth(y,m0);
+  const perDay=staff.salary/30;
+  const hisab=rec.hisabDate||lastMondayISO(key);
+  // remaining unworked days = from hisab date (exclusive) to month end
+  let remaining=0;
+  const hd=new Date(hisab);
+  if(hd.getFullYear()===y && hd.getMonth()===m0) remaining=Math.max(0, dim - hd.getDate());
+  const deductAbsent=Math.max(0,(rec.absent||0)-(rec.paidLeaves||0));
+  const gapDays=deductAbsent+remaining;
+  const deduction=perDay*gapDays;
+  const net=staff.salary-deduction;
+  const advTotal=(rec.advances||[]).reduce((s,a)=>s+(+a.amount||0),0);
+  const toPay=net-advTotal;
+  return {rec,dim,perDay,hisab,remaining,deductAbsent,gapDays,deduction,net,advTotal,toPay};
+}
+
+function renderStaff(){
+  if(!$("#staffMonth").value) $("#staffMonth").value=staffMonth;
+  staffMonth=$("#staffMonth").value||staffMonth;
+  const list=$("#staffList");
+  if(!state.staff.length){
+    list.innerHTML=`<div class="empty"><div class="big">🧑‍🏭</div>No fixed staff yet.<br><button class="btn primary sm" style="margin-top:12px" onclick="openAddStaff()">Add staff</button></div>`;
+    return;
+  }
+  list.innerHTML=`<div class="card">`+state.staff.map(s=>{
+    const c=salaryCalc(s,staffMonth);
+    return `<div class="lrow" onclick="openStaff('${s.id}')">
+      <div class="lead">${esc(initials(s.name))}</div>
+      <div class="body"><div class="t">${esc(s.name)}</div>
+        <div class="s">salary ${rup(s.salary)} · advance ${rup(c.advTotal)}${c.rec.absent?` · ${c.rec.absent} absent`:""}</div></div>
+      <div class="end"><div class="amt" style="color:${c.toPay>=0?'var(--good)':'var(--bad)'}">${rup(c.toPay)}</div>
+        <div class="s">${c.rec.settled?'settled':'to pay'}</div></div>
+    </div>`;
+  }).join("")+`</div>
+  <div class="field hint" style="margin:12px 4px">Hisab = Salary − (Salary÷30 × gap days) − advances. Gap days = absent (after ${PAID_LEAVES_DEFAULT} paid leaves) + days left after the hisab date.</div>`;
+}
+$("#staffMonth")&&($("#staffMonth").onchange=renderStaff);
+$("#addStaffBtn")&&($("#addStaffBtn").onclick=()=>openAddStaff());
+
+function openAddStaff(){
+  modal(`<h3>Add fixed staff</h3>
+    <div class="s" style="color:var(--muted);margin-bottom:12px">Monthly-salary employees (guard, ironing, helper, etc.).</div>
+    <div class="field"><label>Name</label><input id="as_name" placeholder="e.g. Ramlal"></div>
+    <div class="field"><label>Monthly salary (₹)</label><input id="as_sal" inputmode="numeric" placeholder="e.g. 12000"></div>
+    <button class="btn primary block" id="as_save">Add staff</button>`);
+  $("#as_save").onclick=()=>{
+    const name=$("#as_name").value.trim(), sal=parseFloat($("#as_sal").value)||0;
+    if(!name||sal<=0) return toast("Enter name and salary","err");
+    state.staff.push({id:uid(),name,salary:sal}); save(); closeModal(); toast("Staff added","ok"); renderStaff();
+  };
+}
+
+function openStaff(id){
+  const s=state.staff.find(x=>x.id===id); if(!s) return;
+  const key=staffMonth; const c=salaryCalc(s,key); const rec=c.rec;
+  const monLabel=new Date(key+"-01").toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const advRows=(rec.advances||[]).map((a,i)=>`<div class="lrow" style="padding:9px 0">
+      <div class="body"><div class="t" style="font-size:14px">${rup(a.amount)}</div><div class="s">${fmtDate(a.date)}</div></div>
+      <button class="btn ghost sm" onclick="delAdv('${id}','${key}',${i})" style="color:var(--bad)">✕</button></div>`).join("")
+      || `<div class="s" style="color:var(--muted);padding:6px 0">No advances this month.</div>`;
+  modal(`<h3>${esc(s.name)}</h3>
+    <div style="color:var(--muted);font-size:12.5px;margin-bottom:12px">${monLabel} · salary ${rup(s.salary)}</div>
+
+    <div class="grid2">
+      <div class="field"><label>Absent days</label><input type="number" id="st_absent" inputmode="numeric" value="${rec.absent||0}"></div>
+      <div class="field"><label>Paid leaves</label><input type="number" id="st_leave" inputmode="numeric" value="${rec.paidLeaves}"></div>
+    </div>
+    <div class="field"><label>Hisab date (final Monday)</label><input type="date" id="st_hisab" value="${c.hisab}"></div>
+
+    <div class="section-title" style="margin:14px 4px 6px">This month's calculation</div>
+    <div class="card pad" style="background:var(--paper);box-shadow:none">
+      ${calcRow("Per day (salary ÷ 30)",rup(c.perDay))}
+      ${calcRow("Absent days",(rec.absent||0)+" days")}
+      ${calcRow("Less paid leaves","− "+rec.paidLeaves+" days")}
+      ${calcRow("Days left after hisab date",c.remaining+" days")}
+      ${calcRow("Gap days (deducted)","<b>"+c.gapDays+" days</b>")}
+      ${calcRow("Deduction","− "+rup(c.deduction))}
+    </div>
+    <div class="readout" style="margin-top:12px"><span class="k">NET SALARY</span><span class="v num">${rup(c.net)}</span></div>
+    <div class="readout" style="background:var(--denim-700)"><span class="k">Advances given (−)</span><span class="v num">${rup(c.advTotal)}</span></div>
+    <div class="readout" style="background:${c.toPay>=0?'var(--gold)':'var(--bad)'};color:${c.toPay>=0?'var(--denim-900)':'#fff'}">
+      <span class="k" style="color:${c.toPay>=0?'var(--denim-800)':'#fff'}">HISAB TO PAY</span><span class="v num">${rup(c.toPay)}</span></div>
+
+    <div class="section-title" style="margin:16px 4px 6px">Monday advances</div>
+    <div id="advBox">${advRows}</div>
+    <div class="grid2" style="margin-top:8px">
+      <input type="date" id="ad_date" value="${todayISO()}" style="padding:11px;border:1.5px solid var(--line);border-radius:11px">
+      <div style="display:flex;gap:8px"><input type="number" id="ad_amt" placeholder="₹ amount" inputmode="numeric" style="flex:1;padding:11px;border:1.5px solid var(--line);border-radius:11px">
+        <button class="btn dark sm" onclick="addAdv('${id}','${key}')">Add</button></div>
+    </div>
+
+    <button class="btn primary block" style="margin-top:16px" onclick="saveStaffMonth('${id}','${key}')">Save month</button>
+    <button class="btn ghost block" style="margin-top:8px" onclick="printPayslip('${id}','${key}')">🖨️ Print payslip</button>
+    <button class="btn ghost block" style="margin-top:8px;color:var(--bad)" onclick="delStaff('${id}')">Delete staff</button>`);
+}
+function calcRow(k,v){return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px"><span style="color:var(--muted)">${k}</span><span class="num">${v}</span></div>`;}
+
+function saveStaffMonth(id,key){
+  const rec=getSalRec(id,key);
+  rec.absent=parseInt($("#st_absent").value)||0;
+  rec.paidLeaves=parseInt($("#st_leave").value)||0;
+  rec.hisabDate=$("#st_hisab").value||"";
+  save(); toast("Saved","ok"); openStaff(id); renderStaff();
+}
+function addAdv(id,key){
+  const d=$("#ad_date").value, a=parseFloat($("#ad_amt").value)||0;
+  if(!d||a<=0) return toast("Enter date and amount","err");
+  const rec=getSalRec(id,key); rec.advances.push({date:d,amount:a}); save(); openStaff(id); renderStaff();
+}
+function delAdv(id,key,i){ const rec=getSalRec(id,key); rec.advances.splice(i,1); save(); openStaff(id); renderStaff(); }
+function delStaff(id){
+  askPassword("delete this staff member", ()=>{
+    if(!confirm("Delete this staff member and all their salary records?")) return;
+    state.staff=state.staff.filter(x=>x.id!==id);
+    Object.keys(state.salary).forEach(k=>{ if(k.startsWith(id+"|")) delete state.salary[k]; });
+    save(); closeModal(); toast("Staff deleted"); renderStaff();
+  });
+}
+
+function printPayslip(id,key){
+  const s=state.staff.find(x=>x.id===id); const c=salaryCalc(s,key);
+  const monLabel=new Date(key+"-01").toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const advList=(c.rec.advances||[]).map(a=>`<tr><td>${fmtDate(a.date)}</td><td style="text-align:right">${rup(a.amount)}</td></tr>`).join("")||`<tr><td colspan="2">No advances</td></tr>`;
+  const w=window.open("","_blank");
+  w.document.write(`<html><head><title>Payslip — ${esc(s.name)}</title>
+   <style>body{font-family:Arial;padding:26px;color:#171f30;max-width:520px}h2{margin:0}.hd{color:#666;font-size:13px;margin:4px 0 16px}
+   table{width:100%;border-collapse:collapse;font-size:14px}td{padding:7px 4px;border-bottom:1px solid #eee}
+   .tot td{font-weight:bold;border-top:2px solid #26385f;border-bottom:0}.big{font-size:20px}
+   .box{background:#26385f;color:#fff;padding:14px 16px;border-radius:10px;display:flex;justify-content:space-between;margin-top:16px;font-size:17px;font-weight:bold}</style></head><body>
+   <h2>TUHI COLLECTION — Salary Payslip</h2>
+   <div class="hd">${esc(s.name)} · ${monLabel}</div>
+   <table>
+     <tr><td>Monthly salary</td><td style="text-align:right">${rup(s.salary)}</td></tr>
+     <tr><td>Per day (÷30)</td><td style="text-align:right">${rup(c.perDay)}</td></tr>
+     <tr><td>Absent days (− ${c.rec.paidLeaves} paid leave)</td><td style="text-align:right">${c.rec.absent||0} days</td></tr>
+     <tr><td>Days left after hisab</td><td style="text-align:right">${c.remaining} days</td></tr>
+     <tr><td>Gap days deducted</td><td style="text-align:right">${c.gapDays} days</td></tr>
+     <tr><td>Deduction</td><td style="text-align:right">− ${rup(c.deduction)}</td></tr>
+     <tr class="tot"><td>Net salary</td><td style="text-align:right">${rup(c.net)}</td></tr>
+   </table>
+   <h3 style="margin:18px 0 6px;font-size:14px">Advances given</h3>
+   <table>${advList}<tr class="tot"><td>Total advances</td><td style="text-align:right">− ${rup(c.advTotal)}</td></tr></table>
+   <div class="box"><span>HISAB TO PAY</span><span>${rup(c.toPay)}</span></div>
+   <p style="color:#666;font-size:12px;margin-top:20px">Hisab date: ${fmtDate(c.hisab)}</p>
+   </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),300);
+}
+
+/* ============ INIT ============ */
+renderHome();
+</script>
+</body>
+</html>
